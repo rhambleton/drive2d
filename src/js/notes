@@ -1,0 +1,148 @@
+//SUMMARY
+
+//physics based motion
+	- need to understand 'sticky wall problem'
+		- seems to be to do with z-axis NOT move with the player...
+			- may go away when we full implement physics based motion in all directions.
+	- speed limit still applies at +/-40
+		- this isn't a bad thing - but we need to figure out where that is coming from in the code
+	- need to store accelation and velocity in WORLD coordinates so to accurately reflect 'momentum'
+
+
+FRAME RATE / CLIPPING
+- to avoid hard coding the number of vertices - a loop should be used - for some reason this creates clipping issues and slows things down
+- still some minor clipping issues - particularly vertically
+	- problem appears to be in 'point_inside_face'
+	- problem is definitely within full_enclosure_check
+	- problem arises when the back face is fully enclosed in the front one, but at least 1 edge is very close to an edge of the front shape
+
+GAMEPLAY 
+- main.js currently implements an endless serious of mazes - exiting one auto-refreshes into the next
+- consider a timer, and a 'best time' tracker (local storage?)
+- I want to be able to shoot stuff
+	- what: considering stationary 'lasers' placed around the level (how?)
+	- player would need to strategically eliminate them without dying
+	- need to implement weapons
+- IDEA - instead of a hole in the floor - use an 'airlock' to load the next level
+	- door at end of map opens, player passes through it into the 'airlock' with a single closed door in front of them
+	- when they hit the 'open' hitbox for the second door, the page reloads
+		- the start of each map features a door directly behind the player (which won't open) and one directly in front that opens as soon as the page loads...
+
+CODE CLEANUP
+- remove blocked items from choices list - repetitive as heck, should be a function
+- lots of shared code between hallway and random_level
+- naming conventions and code structure are inconsistent
+- name space issues....espeically in 3d.js
+
+SOUNDS
+- footsteps?
+- weapons?
+
+CONTROLS
+- touch controls for phones?
+- mouse controls?
+
+PLAYER / VIEWPORT MERGE
+- viewport data should be integrated into the 'player' object
+- player object should be part of the world object in worldbuilder (world.player; not a self contained object in main.)
+
+VEHICLE TYPES
+- should be part of the 'player' object (config.vehicleType?)
+- implement different movement / control algorithms to emulate different vehicle types
+	- hover craft
+		- thrust, rotate
+		- high intertia, low drag
+	- car
+		- accelerate, brake, coast, turn
+		- moderae inertia, moderate drag
+	- pedestrian
+		- forward, backward, turn, strafe
+		- low inertria, high drag
+
+
+
+
+SCREEN SIZE
+- can we scale things based on the display size of the device...?
+- all constants (involved with speed/movement) need to be a % of these screen size...
+
+
+RANDOM LEVEL GENERATION
+- works pretty well
+- need to fix the placement of the 'end' (not always in the best spot)
+	- current approach
+		- place the player start as far from the 'seed point' of the level as possible.
+		- place the exit as far from the player start as possible
+- need to consider how to make more 'hallways' rather than one large room.
+- once we have hallways we can consider adding doors
+
+AUTO HALLWAY GENERATION
+- imperfect - sometimes the hallway 'dead ends' against itself - need to review code
+
+
+
+
+
+
+BRANCHING MAZE GENERATION
+
+		idea 1
+		- loop over the map
+			- look for squares that are populated by a branch (tee, crossroads)
+			- based on the type and direction - check the square next to the branch and see if it is blank (id=80)
+			- if it is blank - populate it with one of the following pieces:
+				- straight
+				- elbow
+			- check the space after the piece we just put in
+				- if it is blank, populate it with either a straight or an elbow
+					- continue until the square on the end is not blank, or we reach the maximum length
+					- insert an appropriately oriented end section.
+
+		Idea 1 could be expanded by also allowing tee's and crossroads to be inserted into the branch
+			- the map would need to be researched after the first pass to populate any newly inserted branches
+			- this would need to continue until no new branches are inserted
+
+
+		Idea 2
+		- loop along the path
+		- stop at first branch - follow it and populate it in the same way as the main path
+		- stop at next branch - follow it and populate it in the same way as the main path
+
+		- we would then need to recursively follow each new branch until no more branches are added
+			- maybe apply a 'branching level limit' after which no new branches can be inserted in a hallway
+
+		Idea 2 - probably need to represent the hallway with a tree structure - which we have yet to fully get our minds and code around
+
+
+
+Other notes:
+
+how doors work
+- each sectionID for the object is set to 'doorXX' where XX is a global counter incremented for each new door
+- the hitboxes for the front and back faces of the door are given a triggerID which matches this sectionID
+- the collision checks in main.js now check for the triggerID's associated with each hitboxes
+	- if triggerID matches the sectionID of an object in the objects array, the open() method for that object is called
+	- the open method adjusts the bottom vertices of the front and back, and all 4 vertices of the bottom to the open position
+	- the open method also adjusts the min_y of the front/back hit boxes and both the min_y and max_y of the bottom hitboxes
+
+- code is a bit cludgy - but it works
+
+	//how it works
+
+		- there are 2 hitboxes on either side of the door - one to open it (near the door) and one to close it (farther away)
+
+							|	| DOOR |	|
+							C 	O 	   O 	C
+
+		- these hitboxes are 'transparent' (state = 2) - so they do not interfere with player movement
+		- when the player enters either of the 'open' hitboxes then the door's trigger is fired with code 1
+			- the activate() function uses this input parameter to put the door into the 'opening' state.
+		- when the player enters either of the 'close' hitboxes then the door's trigger is fired with code 0
+			- the activate() function uses this input parameter to put the door into the 'closing' state.
+		- update() function then does the rest of the work, animating the door as the main animation loop in main.js executes
+			- update() is called during the animation loop for all triggers
+			- if door.is_opening == 1, then update() increments the door vertices towards the open position
+				- when the vertices reach the open position door.is_opening is set to 0, door.is_open is set to 1.
+			- if door.is_closing == 1, then door.update() increments the door vertices towards the closed position
+				- when the vertices reach the closed position door.is_closing is set to 0, door.is_closed is set to 1
+
