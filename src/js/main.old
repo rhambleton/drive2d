@@ -18,9 +18,9 @@ var projectionType = 'weak-perspective';
 
 //specify whether or not to display the crosshair
 var crosshair = {
-    on : 1,                         //1=on, 0=off
-    size : 16,                      //size of crosshair
-    color : 'rgba(255,255,255,0.2)'       //color of crosshair
+    on : 1,                             // 1=on, 0=off
+    size : 16,                          // size of crosshair
+    color : 'rgba(255,255,255,0.2)'     // color of crosshair
 }
 
 //define the maximum drawing distance - EXPERIMENTAL - currently can cause crashes when almost all faces are clipped
@@ -45,15 +45,20 @@ var ctr; //used to store the center of an object
 var wdth; //used to store the width of the an object (x-axis)
 var hgth; //used to store the height of an object (y-axis)
 var dpth; //used to store the depth of an object (z-axis)
+var active_hitboxes //used to store number of objects we are touching (to enable movement)
 
 //initialize the world object
-var world = new World();
-world.collisions = [];
-
+var config = {
+    gravity : 40,   //level of gravity in the world
+    friction : 0.2   //level of friction in the world (air friction, etc.);
+};
+var world = new World(config);
 
 
 //define the main animiation loop
 function drawAndUpdate(zmap,currentT) {
+
+    //console.log(viewPort.location.y);
 
     //clear the previous frame
     context.clearRect(0,0,canvas.width,canvas.height);
@@ -61,15 +66,81 @@ function drawAndUpdate(zmap,currentT) {
     //initialize array of all hitboxes that collide with the player
     var all_hitboxes = [];
 
-    //rotate the viewport
+    //update the player direction
     viewPort.yaw += viewPort.turn.x;
     viewPort.pitch += viewPort.turn.y;
+    viewPort.roll += viewPort.turn.z;
 
-    //convert viewPort speed to world coordinates
-    var worldSpeed = changeToWorldBasis(viewPort.speed, viewPort);
+    //backup old values - force, acceleration, velocity, location
+    var old = {
+        force: {
+            x : viewPort.force.x,
+            y : viewPort.force.y,
+            z : viewPort.force.z
+        },
+        acceleration: {
+            x : viewPort.acceleration.x,
+            y : viewPort.acceleration.y,
+            z : viewPort.acceleration.z
+        },
+        velocity: {
+            x : viewPort.velocity.x,
+            y : viewPort.velocity.y,
+            z : viewPort.velocity.z
+        },
+        location: {
+            x : viewPort.location.x,
+            y : viewPort.location.y,
+            z : viewPort.location.z
+        }
+    };
 
-    //move the viewport
-    viewPort.location.x += worldSpeed.x;
+    //update worldVelocity components
+
+        //player.force should ve in player coordinates
+        //viewPort.force should be in world coordinates
+        //viewPort.acceleration should be world coordinates
+        //viewPort.velocity should be in world coordinates
+
+    //convert force to world coordinates
+    var worldForce = changeToWorldBasis(player.force, viewPort);
+
+    viewPort.force.x = worldForce.x - world.config.friction*viewPort.velocity.x;
+    viewPort.acceleration.x = viewPort.force.x / viewPort.mass;
+    viewPort.velocity.x += viewPort.acceleration.x;      
+    if(viewPort.velocity.x < 0) {
+        viewPort.velocity.x = Math.max(-375, viewPort.velocity.x);
+    } else {
+        viewPort.velocity.x = Math.min(375, viewPort.velocity.x);
+    }
+
+
+    viewPort.force.y = worldForce.y - world.config.gravity - world.config.friction*viewPort.velocity.y; 
+    viewPort.acceleration.y = viewPort.force.y / viewPort.mass;
+    viewPort.velocity.y += viewPort.acceleration.y;        
+    if(viewPort.velocity.y < 0) {
+        viewPort.velocity.y = Math.max(-375, viewPort.velocity.y);
+    } else {
+        viewPort.velocity.y = Math.min(375, viewPort.velocity.y);
+    }
+
+    
+    viewPort.force.z = worldForce.z - world.config.friction*viewPort.velocity.z;
+    viewPort.acceleration.z = viewPort.force.z / viewPort.mass;
+    viewPort.velocity.z += viewPort.acceleration.z;
+    if(viewPort.velocity.z < 0) {
+        viewPort.velocity.z = Math.max(-375, viewPort.velocity.z);
+    } else {
+        viewPort.velocity.z = Math.min(375, viewPort.velocity.z);
+    }
+
+
+    //convert velocity to world coordinates
+    //var worldVelocity = changeToWorldBasis(viewPort.velocity, viewPort);
+    var worldVelocity = viewPort.velocity;
+
+    //apply x direction motion
+    viewPort.location.x += worldVelocity.x;
 
     //check for collisions
     player.hitbox = new collision_box({
@@ -100,18 +171,24 @@ function drawAndUpdate(zmap,currentT) {
     //check if we found any active collisions
     if(collision_counter != 0) {
 
-        //we have hit an active hitbox - we cannot move this way
-        viewPort.location.x -= worldSpeed.x;
-        worldSpeed.x = 0;
+        //we have hit an active hitbox - we cannot move this way (could modify this to create bouncy walls)
+        viewPort.force.x = 0;
+        viewPort.acceleration.x = 0;
+        viewPort.velocity.x = 0;
+        viewPort.location.x = old.location.x;
 
     } //end check if we found any active collisions
 
-    //move the viewport
-    if(player.jetpack == 0) { 
-        worldSpeed.y -= viewPort.gravity*100;
-    }
-    viewPort.location.y = viewPort.location.y + worldSpeed.y;
 
+    //apply y direction motion
+    if(player.jetpack == 0) {
+        viewPort.location.y += viewPort.velocity.y;    
+    } else if (player.force.y > 0) {
+        viewPort.location.y += 10;
+    } else if (player.force.y < 0) {
+        viewPort.location.y -= 10;
+    }
+    
     //check for collisions
     player.hitbox = new collision_box({
         ctr : viewPort.location,
@@ -141,14 +218,18 @@ function drawAndUpdate(zmap,currentT) {
     //check if we found any active collisions
     if(collision_counter != 0) {
 
-        //we have hit an active hitbox - we cannot move this way
-        viewPort.location.y -= worldSpeed.y;
-        worldSpeed.y = 0;
+        //we have hit an active hitbox - we cannot move this way (could modify this to create a bouncy floor...)
+        viewPort.force.y = 0;
+        viewPort.acceleration.y = 0;
+        viewPort.velocity.y = 0;        
+        viewPort.location.y = old.location.y;
 
     } //end check if we found any active collisions
 
-    //move the viewPort
-    viewPort.location.z += worldSpeed.z;
+
+    
+    //apply z-direction motion
+    viewPort.location.z += worldVelocity.z;
 
     //update the player hitbox
     player.hitbox = new collision_box({
@@ -181,13 +262,15 @@ function drawAndUpdate(zmap,currentT) {
     //check if we found any active collisions
     if(collision_counter != 0) {
 
-        //we have hit an active hitbox - we cannot move this way
-        viewPort.location.z -= worldSpeed.z;
-        worldSpeed.z = 0;
+        //we have hit an active hitbox - we cannot move this way (could modify this to create bouncy walls)
+        viewPort.force.z = 0;
+        viewPort.acceleration.z = 0;
+        viewPort.velocity.z = 0;
+        viewPort.location.z = old.location.z;
 
     } //end check if we found any active collisions
 
-    //update the player hitbvox with the final location and finalize the collision list
+    //update the player hitbox with the final location and finalize the collision list
     player.hitbox = new collision_box({
 
         ctr : viewPort.location,
@@ -200,23 +283,29 @@ function drawAndUpdate(zmap,currentT) {
 
     });
 
+    //check if we are falling - if so, refresh the page to start again
     if (viewPort.location.y < -10000) {
         location.reload();
     }
     
+    //used to see if we can move
+    active_hitboxes = 0;
+
     //loop over all the hitboxes we have collided with - check for triggers
     for(c=0; c<all_hitboxes.length; c++) {
 
         // check that this hitbox is not inactive
         if(all_hitboxes[c].state != 0) {
 
+            //count how many hit boxes are active
+            active_hitboxes++;
+
+            //active this trigger
             var this_triggerID = all_hitboxes[c].triggerID;
-
             if(this_triggerID !== "") {
-
-                //activate this trigger
                 world.triggers[this_triggerID].activate(all_hitboxes[c].triggerCode);
-            }            
+            }    
+
         }  // end check that hitbox is not inactive
 
     }
@@ -261,37 +350,39 @@ function drawAndUpdate(zmap,currentT) {
    window.onkeydown = window.onkeyup = function (e) {
             
         e = e || event; // to deal with IE
+
+
         keymap[e.keyCode] = e.type == 'keydown';
 
-        if (keymap[74] == true) {
-            //J
-            //console.log("jetpack: "+player.jetpack);
-            if(player.jetpack == 0) {
-                player.jetpack = 1;
-            } else { player.jetpack = 0; }
+        //if we are touching something
+        if(active_hitboxes > 0 || player.jetpack == 1) {
+
+            if (keymap[65] == true) {
+                //A
+                player.force.x = -1*player.strength.x;
+            }
+            if (keymap[68] == true) {
+                //D
+                player.force.x = player.strength.x;
+            }
+            if (keymap[87] == true) {
+                //W
+                player.force.z = player.strength.z;
+            }
+            if (keymap[83] == true) {
+                //S
+                player.force.z = -1*player.strength.z;
+            }
+            if (keymap[38] == true) {
+                //UP
+                player.force.y = player.strength.y;                    
+            }
+            if (keymap[40] == true) {   
+                player.force.y = -1*player.strength.y;
+            }
+
         }
-        if (keymap[65] == true) {
-            //A
-            viewPort.speed.x = Math.max(viewPort.speed.x-=20, -40);;
-        }
-        if (keymap[68] == true) {
-            //D
-            viewPort.speed.x = Math.min(viewPort.speed.x+=20,40);;
-        }
-        if (keymap[87] == true) {
-            //W
-            viewPort.speed.z = Math.min(viewPort.speed.z+=20,40);
-        }
-        if (keymap[83] == true) {
-            //S
-            viewPort.speed.z = Math.max(viewPort.speed.z-=20,-40);
-        }
-        if (keymap[38] == true) {
-            viewPort.speed.y = Math.min(viewPort.speed.y+=20,40);
-        }
-        if (keymap[40] == true) {
-            viewPort.speed.y = Math.max(viewPort.speed.y-=20,-40);
-        }
+
         if (keymap[37] == true) {
             viewPort.turn.x = -1 * Math.PI / 120;
         }
@@ -299,16 +390,24 @@ function drawAndUpdate(zmap,currentT) {
             viewPort.turn.x = Math.PI / 120;
         }
 
+        if (keymap[74] == true) {
+            //J
+            if(player.jetpack == 0) {
+                player.jetpack = 1;
+            } else { player.jetpack = 0; }
+            console.log("jetpack: "+player.jetpack);
+        }
+
 
         if (e.type == "keyup") {
             if(e.keyCode == 65 || e.keyCode == 68) {
-                viewPort.speed.x = 0;
+                player.force.x = 0;
             }
             if(e.keyCode == 87 || e.keyCode == 83) {
-                viewPort.speed.z = 0;
+                player.force.z = 0;
             }
             if(e.keyCode == 38 || e.keyCode == 40) {
-                viewPort.speed.y = 0;
+                player.force.y = 0;
             }
             if(e.keyCode == 37 || e.keyCode == 39) {
                 viewPort.turn.x = 0;
@@ -320,15 +419,13 @@ function drawAndUpdate(zmap,currentT) {
 //setup our viewPort
 var config = {
 
-    location: new Vertex(0,0,0),
+    location: new Vertex(0,-70,0),
     width: canvas.width,
     height: canvas.height,
     pitch: 0,
-    //yaw: 0,
     yaw: 0, //Math.PI/2,
     roll: 0,
     gravity: 1,
-    gravity_adj: 0,
     max_distance : drawLimit
 
 };
@@ -337,12 +434,11 @@ var config = {
 var viewPort = new viewPort (config);
 
 
-
 //initialize the player object
 var player = {
 
     health: 100,
-    jetpack: 0,
+    jetpack: 0,         //0 = on; 1=off
     height: 600,
     width: 400,
     depth: 400,
@@ -354,8 +450,17 @@ var player = {
         state : 1,
         triggerID : "",
         triggerCode : ""
-    })
-
+    }),
+    force : {
+        x : 0,
+        y : 0,
+        z : 0
+    },
+    strength : {
+        x : 10,
+        y : 70,
+        z : 10,
+    }
 };
 
 
@@ -499,14 +604,18 @@ var player = {
 
 // EXAMPLE: draw a random level of specified size and with randomized parameters
 var sze = 15;
-var lgth = 1+Math.floor(Math.random()*sze/2);
-var hlwys = 1+Math.floor(Math.random()*150/lgth);     //divide by hallway length to prevent too many sections slowing everything down
+var lgth = 1+Math.random()*sze/2;
+var hlwys = 150/(2*lgth) + Math.random()*150/(2*lgth);     //divide by hallway length to prevent too many sections slowing everything down
+var min = 20;
+var max = 50;
 
 var config = {
 
     size : sze,                               //the level will fit a square with sides of this length
     hallways : hlwys,                          //this many hallways will be generated within the square (some may overlap each other)
     length : lgth,                              //this is the maximum length of each hallway
+    min_squares : min,                        //minimum number of square segments in the level
+    max_squares : max,                        //maximum number of square segments in the level
     stroke : 'rgba(0,0,0,1)',                //color for the stroke of each polygon
     fill : {                                 
         ceiling : ['rgba(100,100,100,1)'],   //color to fill the ceiling
