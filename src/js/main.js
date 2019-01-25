@@ -184,88 +184,47 @@ var config = {
     }
 };
 
-var player = new Player_Model(config);
+var player = new Vehicle_Model(config);
 
 
 
-// //EXAMPLE: draw a predefined map
-// var level = {
+//EXAMPLE: draw a predefined map
+var level = {
 
-//         // map must be rectangular
-//         // (0,0) coordinate is top left corner of this array
+        // map must be rectangular
+        // (0,0) coordinate is top left corner of this array
 
-//         map : [
+        map : [
 
-//                 [80,80,13,30,30,10,80,80,80,80],
-//                 [80,80,33,50,50,50,90,10,80,80],
-//                 [13,92,50,50,50,31,80,33,90,10],
-//                 [ 3,80,33,50,50,50,90,11,80, 1],
-//                 [ 3,80,12,50,32,11,80,80,80, 1],
-//                 [ 3,80,80,91,80,80,80,80,80, 1],
-//                 [12, 2, 2,11,80,80,80,80,80,11],
-//                 [80,80,80,80,80,80,80,80,80,80],
-//                 [80,80,80,80,80,80,80,80,80,80],
-//                 [80,80,80,80,80,80,80,80,80,80]
+                [13,30,30,30,30,30,30,30,30,10],
+                [41,50,50,50,50,50,50,50,50,31],
+                [41,50,50,50,50,50,50,50,50,31],
+                [41,50,50,50,50,50,50,50,50,31],
+                [41,50,50,50,50,50,50,50,50,31],
+                [41,50,50,50,50,50,50,50,50,31],
+                [41,50,50,50,50,50,50,50,50,31],
+                [41,50,50,50,50,50,50,50,50,31],
+                [41,50,50,50,50,50,50,50,50,31],
+                [12,40,40,40,40,40,40,40,40,11]
 
-//         ],
-//         config : {
-//             stroke : 'rgba(0,0,0,1)',
-//             fill : {
-//                 ceiling : ['rgba(100,100,100,1)'],
-//                 floor : ['rgba(200,50,100,1'],
-//                 wall : ['rgba(100,100,100,1)'],
-//                 door : ['rgba(50,50,50,1']
-//             },
-//             player_start : {
-//                 row : 3,
-//                 column : 4,
-//                 direction : 1
-//             }
-//         }
-// };
-// world.draw_level(level,world,viewPort);
-
-
-// // EXAMPLE: draw a random level of specified size and with fixed parameters
-// var config = {
-
-//     size : 15,                               //the level will fit a square with sides of this length
-//     hallways : 150,                          //this many hallways will be generated within the square (some may overlap each other)
-//     length : 1,                              //this is the maximum length of each hallway
-//     stroke : 'rgba(0,0,0,1)',                //color for the stroke of each polygon
-//     fill : {                                 
-//         ceiling : ['rgba(100,100,100,1)'],   //color to fill the ceiling
-//         floor : ['rgba(50,50,50,1'],         //color to fill the floor 
-//         wall : ['rgba(100,100,100,1)'],      //color to fill the walls
-//         door : ['rgba(50,50,50,1']           //color to fill any doors (doors not implemented yet)
-//     },
-// };
-// world.random_level(config,world,viewPort);
-
-// EXAMPLE: draw a random level of specified size and with randomized parameters
-var sze = 15;
-var lgth = 1+Math.random()*sze/2;
-var hlwys = 150/(2*lgth) + Math.random()*150/(2*lgth);     //divide by hallway length to prevent too many sections slowing everything down
-var min = 20;
-var max = 50;
-
-var config = {
-
-    size : sze,                               //the level will fit a square with sides of this length
-    hallways : hlwys,                          //this many hallways will be generated within the square (some may overlap each other)
-    length : lgth,                              //this is the maximum length of each hallway
-    min_squares : min,                        //minimum number of square segments in the level
-    max_squares : max,                        //maximum number of square segments in the level
-    stroke : 'rgba(0,0,0,1)',                //color for the stroke of each polygon
-    fill : {                                 
-        ceiling : ['rgba(100,100,100,1)'],   //color to fill the ceiling
-        floor : ['rgba(50,50,50,1'],         //color to fill the floor 
-        wall : ['rgba(100,100,100,1)'],      //color to fill the walls
-        door : ['rgba(50,50,50,1']           //color to fill any doors (doors not implemented yet)
-    },
+        ],
+        config : {
+            stroke : 'rgba(0,0,0,1)',
+            fill : {
+                ceiling : ['rgba(100,100,100,1)'],
+                floor : ['rgba(50,70,50,1'],
+                wall : ['rgba(100,100,100,1)'],
+                door : ['rgba(50,50,50,1']
+            },
+            player_start : {
+                row : 3,
+                column : 4,
+                direction : 1
+            },
+            draw_ceiling : 0
+        }
 };
-world.random_level(config,world,viewPort);
-
+world.draw_level(level,world,viewPort);
 
 
 //start the animation loop

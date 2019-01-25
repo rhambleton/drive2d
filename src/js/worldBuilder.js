@@ -225,21 +225,25 @@ var World = function(config) {
 			    this.hitboxes[this.hitboxes.length] = new collision_box(config);
 
 
-				//add ceiling to faces and hitbox
-				var config = {
-					ctr : new Vertex(section.location.x, section.location.y+section.height/2, section.location.z),
-					width : section.length,
-					height : 0,
-					depth : section.width,
-					id : "face"+this.faces.length,
-					fill : section.fill.ceiling,
-					stroke : section.stroke,
-					state: 1,
-					triggerID : "",
-					triggerCode : ""
-				}
-			    this.faces[this.faces.length] = new Face(config);
-			    this.hitboxes[this.hitboxes.length] = new collision_box(config);
+			    if(hallway.draw_ceiling != 0) {
+
+					//add ceiling to faces and hitbox
+					var config = {
+						ctr : new Vertex(section.location.x, section.location.y+section.height/2, section.location.z),
+						width : section.length,
+						height : 0,
+						depth : section.width,
+						id : "face"+this.faces.length,
+						fill : section.fill.ceiling,
+						stroke : section.stroke,
+						state: 1,
+						triggerID : "",
+						triggerCode : ""
+					}
+				    this.faces[this.faces.length] = new Face(config);
+				    this.hitboxes[this.hitboxes.length] = new collision_box(config);
+
+			    }
 
 			} //end one piece floor and ceiling
 
@@ -1095,7 +1099,8 @@ var World = function(config) {
 			        floor : level.config.fill.floor,            	 	//set the fill color for 'floor' polygons
 			        wall : level.config.fill.wall,             		//set the fill color for 'wall' polygons
 			        door : level.config.fill.door                 	//set the fill color for 'door' polygons
-			    }
+			    },
+			    draw_ceiling : level.config.draw_ceiling
 			}
 
 			this.new_hallway(section,wrld);
