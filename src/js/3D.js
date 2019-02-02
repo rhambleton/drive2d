@@ -35,50 +35,8 @@ var Vertex2D = function(x, y) {
 
 }; // end of vertex2D
 
-//define what a face is
-var Face = function(config) {
 
-    // config.ctr = Vertex(x,y,z)       // coordinates of the center of the face
-    // config.depth;                    // depth along the z-axis
-    // config.width;                    // width along the x-axis
-    // config.height;                   // height along the y-axis
-    // config.id;                       // ID/name of this face
-    // config.fill;                     // color to use to fill the face
-    // config.stroke;                   // color to use for outline of the face
 
-    //populate properties
-    this.ctr = config.ctr;
-    this.depth = config.depth;
-    this.width = config.width;
-    this.height = config.height;
-    this.config = {};
-    this.config.id = config.id;
-    this.config.fill = config.fill;
-    this.config.stroke = config.stroke;
-
-    //define empty vertices array
-    this.vertices = [];
-
-    if(config.width == 0) {
-        this.vertices[this.vertices.length] = new Vertex(this.ctr.x, this.ctr.y-this.height/2,this.ctr.z-this.depth/2);
-        this.vertices[this.vertices.length] = new Vertex(this.ctr.x, this.ctr.y+this.height/2,this.ctr.z-this.depth/2);
-        this.vertices[this.vertices.length] = new Vertex(this.ctr.x, this.ctr.y+this.height/2,this.ctr.z+this.depth/2);
-        this.vertices[this.vertices.length] = new Vertex(this.ctr.x, this.ctr.y-this.height/2,this.ctr.z+this.depth/2);
-    } else if(config.depth == 0) {
-        this.vertices[this.vertices.length] = new Vertex(this.ctr.x-this.width/2, this.ctr.y-this.height/2,this.ctr.z);
-        this.vertices[this.vertices.length] = new Vertex(this.ctr.x-this.width/2, this.ctr.y+this.height/2,this.ctr.z);
-        this.vertices[this.vertices.length] = new Vertex(this.ctr.x+this.width/2, this.ctr.y+this.height/2,this.ctr.z);        
-        this.vertices[this.vertices.length] = new Vertex(this.ctr.x+this.width/2, this.ctr.y-this.height/2,this.ctr.z);
-    } else if(config.height == 0) {
-        this.vertices[this.vertices.length] = new Vertex(this.ctr.x-this.width/2, this.ctr.y,this.ctr.z-this.depth/2);
-        this.vertices[this.vertices.length] = new Vertex(this.ctr.x+this.width/2, this.ctr.y,this.ctr.z-this.depth/2);
-        this.vertices[this.vertices.length] = new Vertex(this.ctr.x+this.width/2, this.ctr.y,this.ctr.z+this.depth/2);
-        this.vertices[this.vertices.length] = new Vertex(this.ctr.x-this.width/2, this.ctr.y,this.ctr.z+this.depth/2);                
-    } else {
-        console.log("Unable to Create Face - all 3 dimensions are none zero");
-    }
-
-} //end of Face
 
 //define what a collision box is
 var collision_box = function(config) {
@@ -903,104 +861,57 @@ function point_on_segment(p, q, r) {
 }
 
 //function to render all the faces in the world
-function render (viewPort, faces, ctx, zmap, dx, dy) {
+function render (world,location,ctx) {
 
-    //extract all object faces into a single faces array
-    var all_faces = [];
+    //set the colors for drawing the face
+    var sky_color = 'rgba(145,185,250,1)';
+    var grnd_color = 'rgba(50,150,50,1)';
+    var road_color = 'rgba(50,50,50,1)';
+    context.lineWidth = 10;
 
-    //loop over each face, dumping it into the all_faces array
-    for (var j=0; j < faces.length; j++) {
+    //define the start and end indexes of what we need to draw
+    var startIndex = location.x;
+    var endIndex = startIndex + canvas.width;
 
-        //place holder variables for calculating the average z and average distances values
-        var vtx_count = 0;
-        var dist_sum = 0;
-        var min_dist = viewPort.max_distance*2;
-        var tmp_dist = 0;
-        var max_z = -1;
-        faces[j].vp_vertices = [];
+    //start the path
+    var sky_pth = new Path2D();
+    var road_pth = new Path2D();
+    var grnd_pth = new Path2D();
 
-        //loop over each vertex populating the above variables
-        for (var k=0; k < faces[j].vertices.length; k++) {
+    //loop over the track vertices
+    for(var i=0;i<=endIndex;i++) {
 
-            tmp = changeToViewPortBasis(faces[j].vertices[k], viewPort);
-            faces[j].vp_vertices[k] = tmp;
-            tmp_dist = Math.sqrt((tmp.x*tmp.x)+(tmp.z*tmp.z)+(tmp.y*tmp.y));
-            dist_sum += tmp_dist;
-            min_dist = tmp_dist < min_dist ? tmp_dist : min_dist;
-            max_z = tmp.z > max_z ? tmp.z : max_z;
-            vtx_count++;
-        }
-    
-        //add this face to the end of the all_faces array
-        all_faces[all_faces.length] = faces[j];
+        sky_pth.moveTo(i,world.track[i+startIndex]-location.y);
+        sky_pth.lineTo(i+1,world.track[i+startIndex+1]-location.y);
+        sky_pth.lineTo(i+1,0);
 
-        //add the average and minimum distance values
-        all_faces[all_faces.length-1].average_dist = dist_sum/vtx_count;
-        all_faces[all_faces.length-1].min_dist = min_dist;
-        all_faces[all_faces.length-1].max_z = max_z;
-    }
+        ctx.strokeStyle = grnd_color;
+        grnd_pth.moveTo(i,world.track[i+startIndex]-location.y);
+        grnd_pth.lineTo(i+1,world.track[i+startIndex+1]-location.y);
+        grnd_pth.lineTo(i+1,canvas.height);
 
+        ctx.strokeStyle = road_color;
+        road_pth.moveTo(i,world.track[i+startIndex]-location.y);
+        road_pth.lineTo(i+1,world.track[i+startIndex+1]-location.y);
 
+    };
 
-    //display the unsorted array of faces (for troubleshooting distance_sorter())
-    // console.log("before");
-    // for(var f=0; f<all_faces.length;f++) {
-    //     console.log(JSON.stringify(all_faces[f].config.id));
-    // }
-    // console.log("");
+    //draw the sky
+    ctx.strokeStyle = sky_color;
+    ctx.stroke(sky_pth);
 
-    //sort all the faces based on their average distance from the viewerport (painters algorithm)
-    all_faces = distance_sorter(all_faces, [], viewPort);
-    
-    //display the sort results for troubleshooting
-    // console.log("after");
-    // for(var f=0; f<all_faces.length;f++) {
-    //     console.log(JSON.stringify(all_faces[f].config.id));
-    // }
-    // console.log("");
+    //draw the ground
+    ctx.strokeStyle = grnd_color;
+    ctx.stroke(grnd_pth);
 
-    //for each face
-    for (var j=0; j < all_faces.length; j++) {
-
-        //set the colors for drawing the face
-        ctx.strokeStyle = all_faces[j].config.stroke;
-        ctx.fillStyle = all_faces[j].config.fill;
-
-        var x_values = [];
-        var y_values = [];
-        var z_values = [];
-
-        //clip the temporary face to remove anything behind the camera
-        tmpFace = polygonZClip(all_faces[j].vp_vertices);
-
-        //make sure there is still something left to render
-        if(tmpFace.length != 0) {
-
-            //draw the face on the workSpace canvas
-    
-                //draw the first vertex
-                var P = project(tmpFace[0], projectionType, viewPort);
-                
-                //create the path for this face and move to starting point
-                var pth = new Path2D();
-                pth.moveTo(P.x + dx, -P.y +dy);
-
-                //draw the other vertices
-                for (var k = 1; k < tmpFace.length; k++) {
-                    P = project(tmpFace[k], projectionType, viewPort);
-                    pth.lineTo(P.x + dx, -P.y + dy);
-
-                } // end loop over the other vertices
-
-                //close the path and draw the face
-                ctx.stroke(pth);
-                ctx.fill(pth);
-
-        } // end check that there was still something to render
-
-    } // end loop over faces
+    //draw the road
+    ctx.strokeStyle = road_color;
+    context.lineWidth = 15;
+    ctx.stroke(road_pth);
 
 }; // end render()
+
+
 
 function draw_crosshair(ctx, size, color) {
     var pth = new Path2D();
