@@ -44,6 +44,10 @@ var Car_Model = function(config) {
 	//define method to draw the vehicle
 	this.draw = function(ctx,location) {
 
+		//rotate the canvas
+		ctx.translate(this.location.x,this.location.y);
+		ctx.rotate(this.angle);
+
 		//draw the wheels
 		for(i=0;i<this.wheel.length;i++) {
 
@@ -51,14 +55,14 @@ var Car_Model = function(config) {
 
 			//draw tires
 			ctx.beginPath();
-			ctx.arc(this.location.x+this.wheel[i].location.x,this.location.y+this.wheel[i].location.y,this.wheel[i].radius-this.wheel[i].tireSize/2,0,2*Math.PI);
+			ctx.arc(this.wheel[i].location.x,this.wheel[i].location.y,this.wheel[i].radius-this.wheel[i].tireSize/2,0,2*Math.PI);
 			ctx.strokeStyle = this.wheel[i].tireColor;
 			ctx.lineWidth = this.wheel[i].tireSize;
 			ctx.stroke();
 
 			//draw wheels
 			ctx.beginPath();
-			ctx.arc(this.location.x+this.wheel[i].location.x,this.location.y+this.wheel[i].location.y,this.wheel[i].radius-this.wheel[i].tireSize,0,2*Math.PI);
+			ctx.arc(this.wheel[i].location.x,this.wheel[i].location.y,this.wheel[i].radius-this.wheel[i].tireSize,0,2*Math.PI);
 			ctx.stroke();
 			ctx.fillStyle = 'rgba(100,100,100)';
 			ctx.fill();
@@ -67,26 +71,26 @@ var Car_Model = function(config) {
 
 		//draw the body work
 		ctx.beginPath();
-		ctx.moveTo(this.location.x+this.wheel[1].location.x+this.wheel[1].radius+3,this.location.y+30);
-		ctx.lineTo(this.location.x+this.wheel[1].location.x+this.wheel[1].radius+15,this.location.y+30);
-		ctx.arcTo (this.location.x+this.wheel[1].location.x+this.wheel[1].radius+25,this.location.y+30,this.location.x+this.wheel[1].location.x+this.wheel[1].radius+25,this.location.y+30-10,10);
-		ctx.lineTo(this.location.x+this.wheel[1].location.x+this.wheel[1].radius+25,this.location.y+30-30)
-		ctx.arcTo (this.location.x+this.wheel[1].location.x+this.wheel[1].radius+25,this.location.y+30-40,this.location.x+this.wheel[1].location.x+this.wheel[1].radius+15,this.location.y+30-40,10);
-		ctx.lineTo(this.location.x+this.wheel[1].location.x,this.location.y+30-40);
-		ctx.arcTo (this.location.x+this.wheel[1].location.x-5,this.location.y+30-40,this.location.x+this.wheel[1].location.x-10,this.location.y+30-45,10);
-		ctx.lineTo(this.location.x+this.wheel[1].location.x-40,this.location.y+30-75);
-		ctx.arcTo (this.location.x+this.wheel[1].location.x-45,this.location.y+30-80,this.location.x+this.wheel[1].location.x-50,this.location.y+30-80,10);
-		ctx.lineTo(this.location.x+this.wheel[0].location.x-3,this.location.y+30-80)
-		ctx.arcTo (this.location.x+this.wheel[0].location.x-43,this.location.y+30-80,this.location.x+this.wheel[0].location.x-43,this.location.y+30-50,30)
-		ctx.lineTo(this.location.x+this.wheel[0].location.x-43,this.location.y+30-10)
-		ctx.arcTo (this.location.x+this.wheel[0].location.x-43,this.location.y+30,this.location.x+this.wheel[0].location.x-33,this.location.y+30,10)
-		ctx.arcTo (this.location.x+this.wheel[0].location.x-30,this.location.y+30,this.location.x+this.wheel[0].location.x-30,this.location.y+30-3,3)
-		ctx.arcTo (this.location.x+this.wheel[0].location.x-30,this.location.y+30-3-this.wheel[0].radius, this.location.x+this.wheel[0].location.x,this.location.y+30-3-this.wheel[0].radius,30)
-		ctx.arcTo (this.location.x+this.wheel[0].location.x+this.wheel[0].radius+3,this.location.y+30-3-this.wheel[0].radius,this.location.x+this.wheel[0].location.x+this.wheel[0].radius+3,this.location.y+30-3,30)
-		ctx.lineTo(this.location.x+this.wheel[1].location.x-this.wheel[1].radius-6,this.location.y+30);
-		ctx.arcTo (this.location.x+this.wheel[1].location.x-this.wheel[1].radius-3,this.location.y+30, this.location.x+this.wheel[1].location.x-this.wheel[1].radius-3,this.location.y+30-3,3);
-		ctx.arcTo (this.location.x+this.wheel[1].location.x-this.wheel[1].radius-3,this.location.y+30-3-this.wheel[1].radius,this.location.x+this.wheel[1].location.x,this.location.y+30-3-this.wheel[1].radius,this.wheel[1].radius+3);
-		ctx.arcTo (this.location.x+this.wheel[1].location.x+this.wheel[1].radius+3,this.location.y+30-3-this.wheel[1].radius,this.location.x+this.wheel[1].location.x+this.wheel[1].radius+3,this.location.y+30-3,this.wheel[1].radius+3);
+		ctx.moveTo(this.wheel[1].location.x+this.wheel[1].radius+3,30);
+		ctx.lineTo(this.wheel[1].location.x+this.wheel[1].radius+15,30);
+		ctx.arcTo (this.wheel[1].location.x+this.wheel[1].radius+25,30,this.wheel[1].location.x+this.wheel[1].radius+25,30-10,10);
+		ctx.lineTo(this.wheel[1].location.x+this.wheel[1].radius+25,30-30)
+		ctx.arcTo (this.wheel[1].location.x+this.wheel[1].radius+25,30-40,this.wheel[1].location.x+this.wheel[1].radius+15,30-40,10);
+		ctx.lineTo(this.wheel[1].location.x,30-40);
+		ctx.arcTo (this.wheel[1].location.x-5,30-40,this.wheel[1].location.x-10,30-45,10);
+		ctx.lineTo(this.wheel[1].location.x-40,30-75);
+		ctx.arcTo (this.wheel[1].location.x-45,30-80,this.wheel[1].location.x-50,30-80,10);
+		ctx.lineTo(this.wheel[0].location.x-3,30-80)
+		ctx.arcTo (this.wheel[0].location.x-43,30-80,this.wheel[0].location.x-43,30-50,30)
+		ctx.lineTo(this.wheel[0].location.x-43,30-10)
+		ctx.arcTo (this.wheel[0].location.x-43,30,this.wheel[0].location.x-33,30,10)
+		ctx.arcTo (this.wheel[0].location.x-30,30,this.wheel[0].location.x-30,30-3,3)
+		ctx.arcTo (this.wheel[0].location.x-30,30-3-this.wheel[0].radius, this.wheel[0].location.x,30-3-this.wheel[0].radius,30)
+		ctx.arcTo (this.wheel[0].location.x+this.wheel[0].radius+3,30-3-this.wheel[0].radius,this.wheel[0].location.x+this.wheel[0].radius+3,30-3,30)
+		ctx.lineTo(this.wheel[1].location.x-this.wheel[1].radius-6,30);
+		ctx.arcTo (this.wheel[1].location.x-this.wheel[1].radius-3,30, this.wheel[1].location.x-this.wheel[1].radius-3,30-3,3);
+		ctx.arcTo (this.wheel[1].location.x-this.wheel[1].radius-3,30-3-this.wheel[1].radius,this.wheel[1].location.x,30-3-this.wheel[1].radius,this.wheel[1].radius+3);
+		ctx.arcTo (this.wheel[1].location.x+this.wheel[1].radius+3,30-3-this.wheel[1].radius,this.wheel[1].location.x+this.wheel[1].radius+3,30-3,this.wheel[1].radius+3);
 		ctx.lineWidth = 5;
 		ctx.stroke();
 		ctx.fillStyle = this.color;
@@ -94,19 +98,47 @@ var Car_Model = function(config) {
 
 		//draw the windows
 		ctx.beginPath();
-		ctx.moveTo(this.location.x+this.wheel[1].location.x-45,this.location.y-10);
-		ctx.lineTo(this.location.x+this.wheel[1].location.x-45,this.location.y-40);
-		ctx.lineTo(this.location.x+this.wheel[1].location.x-15,this.location.y-10);
-		ctx.lineTo(this.location.x+this.wheel[1].location.x-45,this.location.y-10);
+		ctx.moveTo(this.wheel[1].location.x-45,-10);
+		ctx.lineTo(this.wheel[1].location.x-45,-40);
+		ctx.lineTo(this.wheel[1].location.x-15,-10);
+		ctx.lineTo(this.wheel[1].location.x-45,-10);
 		ctx.stroke();
 		ctx.fillStyle = 'rgba(145,185,250,1)';
 		ctx.fill();
 		
+		//put the canvas back
+		ctx.rotate(-1*this.angle);
+		ctx.translate(-1*this.location.x, -1*this.location.y);
+
+
 	}; //this.draw()
 
 
 	//define vehicle movement physics
-	this.physics = function() {
+	this.updatePhysics = function() {
+
+		//for each wheel
+			//get the array of contact angles
+			//calculate the forces on the wheel
+			//calcualte the reactions on the wheel
+			//move everything to the CG of the vehicle (forces and moments)
+
+		//for the front collision box
+			//check if each side has hit the ground
+			//for each side
+				//calculate the reactions on the car
+					//move everything to the CG
+
+		//pull in any user input
+			//calculate and apply any moments/forces
+
+		//apply all the moments and forces to the vehicle
+			//update acceleration
+			//upadte velocity
+			//update location
+			//update angular acceleration
+			//update angular velocity
+			//update rotation angle
 
 	};
 

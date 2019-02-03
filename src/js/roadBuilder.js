@@ -122,6 +122,27 @@ var World = function(config) {
 
 	}; //this.newTrack()
 
+	//method to find the location at which the provided wheel touches the track
+	this.wheelContact = function(obj) {
+
+		//obj must be an object with two properties
+		//obj.location = vertex2D containing the center of the wheel
+		//obj.radius = the radius of the wheel
+
+		//determine the max/min x values of the object
+		
+		//for each x value 
+			//check if the distance from the track to the center of the circle is <= the radius
+				//if yes
+					//calculate the angle from contact radius to the center of the circle
+					//add the angle to the array of contact angles
+
+
+		//return the array of contact angles
+
+	}
+
+
 	//method to save the track to a .track file
 	this.saveTrack = function(config) {
 
