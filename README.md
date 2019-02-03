@@ -6,7 +6,7 @@ Randomly generated track map is drawn
 Can move around the map using w,s,a,d controls.
 
 # Future Goals
-add car model with realistic physics
+implement car model with realistic physics
 implement vehicle controls and movement
 implement saving/loading levels
 implement scenery
@@ -17,3 +17,4 @@ implement scoring
 implement multiple vehicles
 implement 'economy' system and vehicle upgrades and coins to collect
 implement speed based 'zoom'
+implement varying track parameters over the length of the track
