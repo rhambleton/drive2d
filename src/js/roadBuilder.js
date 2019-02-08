@@ -126,19 +126,64 @@ var World = function(config) {
 	this.wheelContact = function(obj) {
 
 		//obj must be an object with two properties
-		//obj.location = vertex2D containing the center of the wheel
+		//obj.location = vertex2D containing the center of the wheel (global coordinates)
 		//obj.radius = the radius of the wheel
 
+
+		//initial empty list of contacts and a few other placeholder variables
+		var contact = [];
+		var dist = 0;
+		var y = 0;
+		var total = 0;
+		var ave_x = 0;
+		var delta_x = 0;
+		var delta_y = 0;
+		var contact_angle = 0;
+
 		//determine the max/min x values of the object
+		var max_x = obj.location.x + obj.radius;
+		var min_x = obj.location.x - obj.radius;
 		
 		//for each x value 
+		for(var x=min_x;x<=max_x;x++) {
+
+			//get the track y value
+			y = this.track[x];
+
+			//calculate distance from x,y to center of obj
+			dist = Math.sqrt(((obj.location.x - x)*(obj.location.x - x)) + ((obj.location.y - y)*(obj.location.y - y)));
+
 			//check if the distance from the track to the center of the circle is <= the radius
-				//if yes
-					//calculate the angle from contact radius to the center of the circle
-					//add the angle to the array of contact angles
+			if(dist <= obj.radius && this.track[x] <= obj.location.y) {
+				
+				contact[contact.length] = x;
+
+			}
+
+		} //end loop over x values
+
+		if(contact.length == 0) {
+			return false;
+		} else {
+
+			total = 0;
+
+			//calculate average x value
+			for(j=0; j<contact.length; j++) {
+				total += contact[j];
+			}
+
+			ave_x = total / contact.length;
+		}
 
 
-		//return the array of contact angles
+		//calculate the contact angle
+		delta_y = obj.location.y - this.track[ave_x];
+		delta_x = ave_x - obj.location.x;
+		contact_angle = Math.arctan(delta_x/delta_y)
+
+		//return contact angle
+		return contact_angle;
 
 	}
 
