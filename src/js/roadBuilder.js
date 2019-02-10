@@ -8,6 +8,8 @@ var World = function(config) {
 	this.hitboxes = [];		//master list of hitboxes in the world
 	this.vehicle = {};		//object to hold the vehicle information
 
+	this.displayLocation = config.displayLocation;
+
 	//object to hold world configuration data
 	this.config = {						
 		gravity : config.gravity,
@@ -67,7 +69,9 @@ var World = function(config) {
 		};
 
 		//define the draw routine for the track
-		this.track.draw = function(ctx,location) {
+		this.drawTrack = function(ctx,location) {
+
+			//start index needs to be 'displayLocation' behind the car
 
 		    //set the colors for drawing the face
 		    var sky_color = 'rgba(145,185,250,1)';
@@ -76,7 +80,7 @@ var World = function(config) {
 		    ctx.lineWidth = 10;
 
 		    //define the start and end indexes of what we need to draw
-		    var startIndex = location.x;
+		    var startIndex = location.x-this.displayLocation.x;
 		    var endIndex = startIndex + canvas.width;
 
 		    //start the path
@@ -87,18 +91,18 @@ var World = function(config) {
 		    //loop over the track vertices
 		    for(var i=0;i<=endIndex;i++) {
 
-		        sky_pth.moveTo(i,world.track[i+startIndex]-location.y);
-		        sky_pth.lineTo(i+1,world.track[i+startIndex+1]-location.y);
+		        sky_pth.moveTo(i,world.track[i+startIndex]-location.y+this.displayLocation.y);
+		        sky_pth.lineTo(i+1,world.track[i+startIndex+1]-location.y+this.displayLocation.y);
 		        sky_pth.lineTo(i+1,0);
 
 		        ctx.strokeStyle = grnd_color;
-		        grnd_pth.moveTo(i,world.track[i+startIndex]-location.y);
-		        grnd_pth.lineTo(i+1,world.track[i+startIndex+1]-location.y);
+		        grnd_pth.moveTo(i,world.track[i+startIndex]-location.y+this.displayLocation.y);
+		        grnd_pth.lineTo(i+1,world.track[i+startIndex+1]-location.y+this.displayLocation.y);
 		        grnd_pth.lineTo(i+1,canvas.height);
 
 		        ctx.strokeStyle = road_color;
-		        road_pth.moveTo(i,world.track[i+startIndex]-location.y);
-		        road_pth.lineTo(i+1,world.track[i+startIndex+1]-location.y);
+		        road_pth.moveTo(i,world.track[i+startIndex]-location.y+this.displayLocation.y);
+		        road_pth.lineTo(i+1,world.track[i+startIndex+1]-location.y+this.displayLocation.y);
 
 		    };
 
@@ -121,71 +125,6 @@ var World = function(config) {
 		//generate the objects
 
 	}; //this.newTrack()
-
-	//method to find the location at which the provided wheel touches the track
-	this.wheelContact = function(obj) {
-
-		//obj must be an object with two properties
-		//obj.location = vertex2D containing the center of the wheel (global coordinates)
-		//obj.radius = the radius of the wheel
-
-
-		//initial empty list of contacts and a few other placeholder variables
-		var contact = [];
-		var dist = 0;
-		var y = 0;
-		var total = 0;
-		var ave_x = 0;
-		var delta_x = 0;
-		var delta_y = 0;
-		var contact_angle = 0;
-
-		//determine the max/min x values of the object
-		var max_x = obj.location.x + obj.radius;
-		var min_x = obj.location.x - obj.radius;
-		
-		//for each x value 
-		for(var x=min_x;x<=max_x;x++) {
-
-			//get the track y value
-			y = this.track[x];
-
-			//calculate distance from x,y to center of obj
-			dist = Math.sqrt(((obj.location.x - x)*(obj.location.x - x)) + ((obj.location.y - y)*(obj.location.y - y)));
-
-			//check if the distance from the track to the center of the circle is <= the radius
-			if(dist <= obj.radius && this.track[x] <= obj.location.y) {
-				
-				contact[contact.length] = x;
-
-			}
-
-		} //end loop over x values
-
-		if(contact.length == 0) {
-			return false;
-		} else {
-
-			total = 0;
-
-			//calculate average x value
-			for(j=0; j<contact.length; j++) {
-				total += contact[j];
-			}
-
-			ave_x = total / contact.length;
-		}
-
-
-		//calculate the contact angle
-		delta_y = obj.location.y - this.track[ave_x];
-		delta_x = ave_x - obj.location.x;
-		contact_angle = Math.arctan(delta_x/delta_y)
-
-		//return contact angle
-		return contact_angle;
-
-	}
 
 
 	//method to save the track to a .track file

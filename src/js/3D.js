@@ -232,11 +232,5 @@ function project(M, type, viewPort) {
 //function to render all the faces in the world
 function render (world,location,ctx) {
 
-    
-    world.track.draw(ctx,location);   
-    
-    //rotate canvas by -1 world.vehicle.angle
-    world.vehicle.draw(ctx,location);
-    //rotate canvas by world.vehicle.angle
 
 }; // end render()

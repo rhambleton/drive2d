@@ -45,7 +45,7 @@ var Car_Model = function(config) {
 	this.draw = function(ctx,location) {
 
 		//rotate the canvas
-		ctx.translate(this.location.x,this.location.y);
+		ctx.translate(world.displayLocation.x,world.displayLocation.y);
 		ctx.rotate(this.angle);
 
 		//draw the wheels
@@ -108,14 +108,40 @@ var Car_Model = function(config) {
 		
 		//put the canvas back
 		ctx.rotate(-1*this.angle);
-		ctx.translate(-1*this.location.x, -1*this.location.y);
+		ctx.translate(-1*(world.displayLocation.x), -1*(world.displayLocation.y));
 
 
 	}; //this.draw()
 
 
 	//define vehicle movement physics
-	this.updatePhysics = function() {
+	this.update = function(location) {
+
+	
+		//check if any of the wheels are touching the track
+		for(var i=0; i<this.wheel.length; i++) {
+			
+			this.wheel[i].glbLocation = {};
+			this.wheel[i].glbLocation.x = this.location.x + this.wheel[i].location.x;
+			this.wheel[i].glbLocation.y = this.location.y + this.wheel[i].location.y;
+			this.wheel[i].contactAngle = this.wheelContact(i,world.track);
+
+			console.log(this.wheel[i].contactAngle*180/Math.PI);
+
+			if(this.wheel[i].contactAngle === false) {
+				//no contact has occurred
+				//need to apply 'torque' to rotate the vehicle (change theta)
+			} else {
+				
+				//the wheel is in contact with the track
+				//use the contact angle to determine forces
+
+
+			}		
+
+		}
+
+
 
 		//for each wheel
 			//get the array of contact angles
@@ -147,5 +173,72 @@ var Car_Model = function(config) {
 
 	};
 
+	//method to find the location at which the provided wheel touches the track
+	this.wheelContact = function(i,track) {
+
+		//obj must be an object with two properties
+		//obj.location = vertex2D containing the center of the wheel (global coordinates)
+		//obj.radius = the radius of the wheel
+		var obj = this.wheel[i];
+
+		//initial empty list of contacts and a few other placeholder variables
+		var contact = [];
+		var dist = 0;
+		var y = 0;
+		var total = 0;
+		var ave_x = 0;
+		var delta_x = 0;
+		var delta_y = 0;
+		var contact_angle = 0;
+
+		//determine the max/min x values of the object
+		var max_x = obj.glbLocation.x + obj.radius;
+		var min_x = obj.glbLocation.x - obj.radius;
+
+		//for each x value 
+		for(var x=min_x;x<=max_x;x++) {
+
+			//get the track y value
+			y = track[x];
+
+			//calculate distance from x,y to center of obj
+			dist = Math.sqrt(((obj.glbLocation.x - x)*(obj.glbLocation.x - x)) + ((obj.glbLocation.y - y)*(obj.glbLocation.y - y)));
+
+			//check if the distance from the track to the center of the circle is <= the radius
+			if(dist <= obj.radius) {
+			
+				contact[contact.length] = x;
+
+			}
+
+		} //end loop over x values
+
+		if(contact.length == 0) {
+			return false;
+		} else {
+
+			total = 0;
+
+			//calculate average x value
+			for(j=0; j<contact.length; j++) {
+				total += contact[j];
+			}
+
+			ave_x = Math.floor(total / contact.length);
+		}
+
+		console.log("AVERAGE X: "+ave_x);
+
+		//calculate the contact angle
+		delta_y = track[ave_x] - obj.glbLocation.y;
+		delta_x = ave_x - obj.glbLocation.x;
+		console.log("delta_y: "+delta_y);
+		console.log("delta_x: "+delta_x);
+		contact_angle = Math.atan(delta_x/delta_y)
+
+		//return contact angle
+		return contact_angle;
+
+	}
 
 }; //end Car_Model

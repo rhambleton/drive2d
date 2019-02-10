@@ -20,7 +20,8 @@ var requestAnimationFrame = window.requestAnimationFrame ||
 //initialize the world object
 var config = {
     gravity : 40,   //level of gravity in the world
-    friction : 0.2   //level of friction in the world (air friction, etc.);
+    friction : 0.2,   //level of friction in the world (air friction, etc.);
+    displayLocation : new Vertex2D(200,canvas.height/2-67) //location to display vehicle
 };
 var world = new World(config);
 
@@ -73,21 +74,27 @@ var speedx = 0;
 var speedy = 0;
 
 //define the main animiation loop
-function drawAndUpdate(location,currentT) {
+function drawAndUpdate(currentT) {
 
     //clear the previous frame
     context.clearRect(0,0,canvas.width,canvas.height);
 
-    //render the track
-    render(world,location,context);
+    //draw the track
+    world.drawTrack(context,world.vehicle.location);
 
-    if(location.x < world.track.length - 1) {
-        location.x=location.x+speedx;
-    }
-    location.y = location.y+speedy;
+    //update the vehicle
+    world.vehicle.update();
     
-    if(location.x < 0) {
-        location.x = 0;
+    //draw the vehicle
+    world.vehicle.draw(context,location);
+
+    if(world.vehicle.location.x < world.track.length - 1) {
+        world.vehicle.location.x+=speedx;
+    }
+    world.vehicle.location.y += speedy;
+    
+    if(world.vehicle.location.x < 0) {
+        world.vehicle.location.x = 0;
         speedx = 0;
     }
 
@@ -139,24 +146,8 @@ window.onkeydown = window.onkeyup = function (e) {
 
 }; // end key press listener
 
-//setup our viewPort
-var config = {
 
-    location: new Vertex(0,-70,0),
-    width: canvas.width,
-    height: canvas.height,
-    pitch: 0,
-    yaw: 0, //Math.PI/2,
-    roll: 0,
-    gravity: 1,
-    max_distance : 0
-
-};
-//create our viewPort
-var viewPort = new viewPort (config);
-
-
-drawAndUpdate(new Vertex2D(0,0));
+drawAndUpdate();
 
 
 
