@@ -1,1 +1,9 @@
+started a the physics model
+just working on 1 wheel for now (to get the basic model sorted out)
 
+what isn't working (almost everything)
+- air friction / rolling resistance
+- gravity
+- normal force between road and wheel (which makes the wheel follow the path)
+- friction of road against ground/grip/wheel spin/etc.
+- lots of other things!!

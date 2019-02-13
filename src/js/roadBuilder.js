@@ -22,6 +22,10 @@ var World = function(config) {
 		this.vehicle = new Car_Model(config);
 	}
 
+	this.newWheel = function(config) {
+		this.vehicle = new Wheel_Model(config);
+	}
+
 	//method to add a new track into this.track
 	this.newTrack = function() {
 
