@@ -270,6 +270,7 @@ var Wheel_Model = function(config) {
 	//config.driveWheel					is this a drive wheel
 	//config.output						output of this wheel
 	//config.friction					friction factor for this wheel
+	//config.tireBounce					bounceiness of the tire = 1.0 perfect bounce (no energy loss), 0=no bounce
 
 
 	//define wheel parameters
@@ -287,6 +288,7 @@ var Wheel_Model = function(config) {
 	this.output = config.output;
 	this.contactAngle = 0;
 	this.friction = config.friction;
+	this.tireBounce = config.tireBounce;
 	this.forces = {
 		x : 0,
 		y : 0
@@ -307,11 +309,9 @@ var Wheel_Model = function(config) {
 	//define method to draw the vehicle
 	this.draw = function(ctx,location) {
 
-
 		//rotate the canvas
 		ctx.translate(world.displayLocation.x,world.displayLocation.y);
 		ctx.rotate(this.angle);
-
 
 		//draw tire
 		ctx.beginPath();
@@ -374,62 +374,84 @@ var Wheel_Model = function(config) {
 		//populate the global position of this wheel
 		this.contactAngle = this.wheelContact(this, world.track);
 
-		//if the wheel is touching something
+		//check if we are on the ground
 		if(this.contactAngle !== false) {
 
-			//apply the drive force to this wheel
-			console.log("x0: "+this.forces.x);
-			this.forces.y += (this.output) * Math.sin(this.contactAngle) * drive;
-			this.forces.x += (this.output) * Math.cos(this.contactAngle) * drive;
+			//we are on the ground remove the component of the force normal to the ground
+			
+			//break y force and velocity into two components - one perpendicular and one parallel to the ground
+			var yforce_normal = this.forces.y*Math.cos(this.contactAngle);
+			var yforce_parallel = this.forces.y*Math.sin(this.contactAngle);
+			var yveloc_normal = this.velocity.y*Math.cos(this.contactAngle);
+			var yveloc_parallel = this.velocity.y*Math.sin(this.contactAngle);
 
-			//apply the friction force to this wheel
-			console.log("x1: "+this.forces.x);
-			this.forces.y -= (this.velocity.y) * world.config.friction*this.friction;
-			this.forces.x -= (this.velocity.x) * world.config.friction*this.friction;
-			console.log("x2: "+this.forces.x);
+			//break x force into two compoents - one perpendicular and one parallel to the ground
+			var xforce_normal = this.forces.x*Math.sin(this.contactAngle);
+			var xforce_parallel = this.forces.x*Math.cos(this.contactAngle);
+			var xveloc_normal = this.velocity.x*Math.sin(this.contactAngle);
+			var xveloc_parallel = this.velocity.x*Math.cos(this.contactAngle);
 
-			//any other forces would need to be added in here, before the normal force is calculated and applied
+			//calculate the parallel force from the motor torque
+			var mforce_parallel = drive * this.output / this.radius;
 
-			//calculate the normal force component perpendicular to the track
-			var normal = -1 * (this.forces.y*Math.cos(this.contactAngle) + this.forces.x*Math.cos(this.contactAngle + Math.PI/2));
-			var normaly = normal * Math.cos(this.contactAngle);
-			var normalx = normal * Math.cos(this.contactAngle + Math.PI/2);
-			this.forces.y += normaly;
-			this.forces.x += normalx;
-			console.log("x3: "+this.forces.x);
+			//calculate total normal and parallel forces and velocities
+			var tforce_normal = 0;															//ground absorbs normal force
+			var tforce_parallel = xforce_parallel + yforce_parallel + mforce_parallel;		//add up all parallel forces
+			var tveloc_normal = -1 * (xveloc_normal + yveloc_normal) * this.tireBounce;		//tire bounces of ground
+			var tveloc_parallel = xveloc_parallel + yveloc_parallel;						//add up all parallel forces
 
-			//calculate the angle of the velocity relative to the track
-			normal = -1 * (this.velocity.y*Math.cos(this.contactAngle) + this.velocity.x*Math.cos(this.contactAngle + Math.PI/2));
-			normaly = normal * Math.cos(this.contactAngle);
-			normalx = normal * Math.cos(this.contactAngle + Math.PI/2);
-			this.velocity.y += normaly;
-			this.velocity.x -= normalx;
+			//break normal forces and velocities into x and y components
+			var force_normal_y = tforce_normal * Math.cos(this.contactAngle);
+			var force_normal_x = tforce_normal * Math.sin(this.contactAngle);
+			var veloc_normal_y = tveloc_normal * Math.cos(this.contactAngle);
+			var veloc_normal_x = tveloc_normal * Math.sin(this.contactAngle);
+
+			//break parallel forces and velocities into x and y components
+			var force_parallel_y = tforce_parallel * Math.sin(this.contactAngle);
+			var force_parallel_x = tforce_parallel * Math.cos(this.contactAngle);
+			var veloc_parallel_y = tforce_parallel * Math.sin(this.contactAngle);
+			var veloc_parallel_x = tforce_parallel * Math.cos(this.contactAngle);
+
+			//recombine x and y forces and velocities
+			this.forces.x = force_normal_x + force_parallel_x;
+			this.forces.y = force_normal_y + force_parallel_y;
+			this.velocity.x = veloc_normal_x + veloc_parallel_x;
+			this.velocity.y = veloc_normal_y + veloc_parallel_y;
+
+			//move the wheel
+			this.accel.x = this.forces.x/this.mass;
+			this.accel.y = this.forces.y/this.mass;
+			this.velocity.x += this.accel.x;
+			this.velocity.y += this.accel.y;
+			this.location.x = Math.round(this.location.x + this.velocity.x);
+			this.location.y = Math.round(this.location.y - this.velocity.y);
+
+			//calculate wheel rotation
+			this.alpha = (tveloc_parallel / this.radius);
+
+			//rotate the wheel
+			this.angle += this.alpha;
+			console.log("Angle: "+this.angle);
+
+		} else {
+
+			//move the wheel
+			this.accel.x = this.forces.x/this.mass;
+			this.accel.y = this.forces.y/this.mass;
+			this.velocity.x += this.accel.x;
+			this.velocity.y += this.accel.y;
+			this.location.x = Math.round(this.location.x + this.velocity.x);
+			this.location.y = Math.round(this.location.y - this.velocity.y);
+
+			//rotate the wheel
+			var moment = (this.output * drive * this.radius);
+			var omega = moment / this.inertia;
+			this.alpha += omega; 
+			this.angle += this.alpha;
 
 		}
 
-		//calculate acceleration of the center of the wheel
-		this.accel.x = this.forces.x / this.mass;
-		this.accel.y = this.forces.y / this.mass;
 
-		//calculate velocity of the center of the wheel
-		this.velocity.x += this.accel.x;
-		this.velocity.y += this.accel.y;
-		this.velocity.x = Math.round(this.velocity.x, 0.001);
-		this.velocity.y = Math.round(this.velocity.y, 0.001);
-
-		//update the location of the wheel
-		this.location.x += this.velocity.x;
-		this.location.y -= this.velocity.y;					//negative because canvas y-axis is inverted
-
-		this.location.x = Math.round(this.location.x);
-		this.location.y = Math.round(this.location.y);
-
-
-		//rotate the wheel
-		var moment = this.output * drive * this.radius;
-		var omega = moment / this.inertia;
-		this.alpha += omega; 
-		this.angle += this.alpha;
 
 
 		//console.log(JSON.stringify(this.forces));

@@ -73,10 +73,10 @@ world.newTrack();
 //define the wheel object
 var config = {
 
-    mass : 10,
+    mass : 1,
     radius : 30,
     drawLocation : new Vertex(0,0),             //location of wheel in relation to the default draw point on the screen
-    location : new Vertex2D(190,canvas.height/2-30),
+    location : new Vertex2D(190,canvas.height/2-100),
     angle : 0,
     grip : 1,
     tireSize : 10,
@@ -84,8 +84,9 @@ var config = {
     wheelColor : 'rgba(200,200,200,1)',
     txtColor : 'rgba(175,175,175,1)',
     driveWheel : true,
-    output : 10,
-    friction : 1
+    output : 100,
+    friction : 1,
+    tireBounce : 0.68
 
 }
 world.newWheel(config);
