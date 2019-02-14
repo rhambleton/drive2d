@@ -367,6 +367,8 @@ var Wheel_Model = function(config) {
 	//define vehicle movement physics
 	this.update = function(location) {
 		
+		console.log("V0: "+this.velocity.x);
+
 		//apply gravity to this wheel
 		this.forces.y = -1 * this.mass * world.config.gravity;
 		this.forces.x = 0;
@@ -418,11 +420,16 @@ var Wheel_Model = function(config) {
 			this.velocity.x = veloc_normal_x + veloc_parallel_x;
 			this.velocity.y = veloc_normal_y + veloc_parallel_y;
 
+			console.log("V1: "+this.velocity.x);
+
 			//move the wheel
 			this.accel.x = this.forces.x/this.mass;
 			this.accel.y = this.forces.y/this.mass;
 			this.velocity.x += this.accel.x;
 			this.velocity.y += this.accel.y;
+
+			console.log("V3: "+this.velocity.x);
+
 			this.location.x = Math.round(this.location.x + this.velocity.x);
 			this.location.y = Math.round(this.location.y - this.velocity.y);
 
@@ -431,7 +438,6 @@ var Wheel_Model = function(config) {
 
 			//rotate the wheel
 			this.angle += this.alpha;
-			console.log("Angle: "+this.angle);
 
 		} else {
 
@@ -451,7 +457,7 @@ var Wheel_Model = function(config) {
 
 		}
 
-
+		console.log("V2: "+this.velocity.x);
 
 
 		//console.log(JSON.stringify(this.forces));

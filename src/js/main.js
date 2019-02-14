@@ -85,7 +85,7 @@ var config = {
     txtColor : 'rgba(175,175,175,1)',
     driveWheel : true,
     output : 100,
-    friction : 1,
+    friction : 0.8,
     tireBounce : 0.68
 
 }

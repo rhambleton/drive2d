@@ -1,9 +1,15 @@
-started a the physics model
-just working on 1 wheel for now (to get the basic model sorted out)
+straight/level rolling now works fairly well!
+- no slipping, even when there should be
 
-what isn't working (almost everything)
-- air friction / rolling resistance
-- gravity
-- normal force between road and wheel (which makes the wheel follow the path)
-- friction of road against ground/grip/wheel spin/etc.
-- lots of other things!!
+collision detection with the track needs work
+- if dist < radius, then we need to relocate the wheel so dist = radius
+
+somethings wrong - velocity resets to 0 when no force is applied
+- it should carry over....
+
+we need to implement angular momentum of the wheel
+- if the wheel already has an angular velocity, it should play a role in the force balance....how do we do that?
+
+wheel spin when the wheel is in the air feels weird - too aggressive.
+- need to implement friction to slow the wheel down the drive is removed
+
