@@ -367,17 +367,42 @@ var Wheel_Model = function(config) {
 	//define vehicle movement physics
 	this.update = function(location) {
 		
-		console.log("V0: "+this.velocity.x);
+		var contactData = this.wheelContact(this, world.track);
+
+		// //correct if wheel is embedded in track
+		// while(contactData.contact = true && contactData.min_dist < this.radius) {
+
+		// 	//find the location of the minimum distance and the corresponding x value
+		// 	var correction_dist = contactData.min_dist - this.radius;
+		// 	var correction_x = contactData.min_dist_x;
+
+		// 	//calculate the angle between the center of the wheel and this point
+		// 	var delta_y = world.track[correction_x] - this.location.y;
+		// 	if(delta_y == 0) {
+		// 		contact_angle = Math.PI/2;
+		// 	} else {
+		// 		var delta_x = correction_x - this.location.x;
+		// 		var correction_angle = Math.atan(delta_x/delta_y)			
+		// 	}
+
+		// 	this.location.x -= correction_dist*Math.cos(correction_angle);
+		// 	this.location.y -= correction_dist*Math.sin(correction_angle);
+		// 	contactData = this.wheelContact(this, world.track);
+
+		// }
 
 		//apply gravity to this wheel
 		this.forces.y = -1 * this.mass * world.config.gravity;
 		this.forces.x = 0;
 
 		//populate the global position of this wheel
-		this.contactAngle = this.wheelContact(this, world.track);
+		this.contactAngle = contactData.angle;
 
 		//check if we are on the ground
-		if(this.contactAngle !== false) {
+		if(contactData.contact !== false) {
+
+
+			this.location.y = world.track[this.location.x]-this.radius;
 
 			//we are on the ground remove the component of the force normal to the ground
 			
@@ -420,18 +445,14 @@ var Wheel_Model = function(config) {
 			this.velocity.x = veloc_normal_x + veloc_parallel_x;
 			this.velocity.y = veloc_normal_y + veloc_parallel_y;
 
-			console.log("V1: "+this.velocity.x);
+			// //move the wheel
+			// this.accel.x = this.forces.x/this.mass;
+			// this.accel.y = this.forces.y/this.mass;
+			// this.velocity.x += this.accel.x;
+			// this.velocity.y += this.accel.y;
 
-			//move the wheel
-			this.accel.x = this.forces.x/this.mass;
-			this.accel.y = this.forces.y/this.mass;
-			this.velocity.x += this.accel.x;
-			this.velocity.y += this.accel.y;
-
-			console.log("V3: "+this.velocity.x);
-
-			this.location.x = Math.round(this.location.x + this.velocity.x);
-			this.location.y = Math.round(this.location.y - this.velocity.y);
+			// this.location.x = Math.round(this.location.x + this.velocity.x);
+			// this.location.y = Math.round(this.location.y - this.velocity.y);
 
 			//calculate wheel rotation
 			this.alpha = (tveloc_parallel / this.radius);
@@ -441,14 +462,6 @@ var Wheel_Model = function(config) {
 
 		} else {
 
-			//move the wheel
-			this.accel.x = this.forces.x/this.mass;
-			this.accel.y = this.forces.y/this.mass;
-			this.velocity.x += this.accel.x;
-			this.velocity.y += this.accel.y;
-			this.location.x = Math.round(this.location.x + this.velocity.x);
-			this.location.y = Math.round(this.location.y - this.velocity.y);
-
 			//rotate the wheel
 			var moment = (this.output * drive * this.radius);
 			var omega = moment / this.inertia;
@@ -457,8 +470,14 @@ var Wheel_Model = function(config) {
 
 		}
 
-		console.log("V2: "+this.velocity.x);
+		//move the wheel
+		this.accel.x = this.forces.x/this.mass;
+		this.accel.y = this.forces.y/this.mass;
+		this.velocity.x += this.accel.x;
+		this.velocity.y += this.accel.y;
 
+		this.location.x = Math.round(this.location.x + this.velocity.x);
+		this.location.y = Math.round(this.location.y - this.velocity.y);
 
 		//console.log(JSON.stringify(this.forces));
 		
@@ -547,6 +566,14 @@ var Wheel_Model = function(config) {
 		var delta_x = 0;
 		var delta_y = 0;
 		var contact_angle = 0;
+		var return_object = {
+			contact : false,
+			min_dist : 100000,
+			min_dist_x : 0,
+			max_dist : 0,
+			max_dist_x : 0,
+			angle : 0
+		};
 
 		//determine the max/min x values of the object
 		var max_x = obj.location.x + obj.radius;
@@ -560,6 +587,11 @@ var Wheel_Model = function(config) {
 
 			//calculate distance from x,y to center of obj
 			dist = Math.sqrt(((obj.location.x - x)*(obj.location.x - x)) + ((obj.location.y - y)*(obj.location.y - y)));
+			return_object.min_dist = Math.min(dist,return_object.min_dist);
+			return_object.min_dist_x = x;
+			return_object.max_dist = Math.max(dist,return_object.max_dist);
+			return_object.max_dist_x = x;
+
 
 			//check if the distance from the track to the center of the circle is <= the radius
 			if(dist <= obj.radius) {
@@ -571,7 +603,10 @@ var Wheel_Model = function(config) {
 		} //end loop over x values
 
 		if(contact.length == 0) {
-			return false;
+			
+			return_object.contact = false;
+			return return_object;
+
 		} else {
 
 			total = 0;
@@ -593,9 +628,11 @@ var Wheel_Model = function(config) {
 			contact_angle = Math.atan(delta_x/delta_y)			
 		}
 
+		return_object.contact = true;
+		return_object.angle = contact_angle;
 
 		//return contact angle
-		return contact_angle;
+		return return_object;
 
 	}
 

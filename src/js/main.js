@@ -19,9 +19,9 @@ var requestAnimationFrame = window.requestAnimationFrame ||
 
 //initialize the world object
 var config = {
-    gravity : 0.1,   //level of gravity in the world
+    gravity : 0.5,   //level of gravity in the world
     friction : 1,   //level of friction in the world (air friction, etc.);
-    displayLocation : new Vertex2D(200,canvas.height/2-67) //location to display vehicle
+    displayLocation : new Vertex2D(200,canvas.height/2) //location to display vehicle
 };
 var world = new World(config);
 

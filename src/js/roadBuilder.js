@@ -92,21 +92,25 @@ var World = function(config) {
 		    var road_pth = new Path2D();
 		    var grnd_pth = new Path2D();
 
-		    //loop over the track vertices
-		    for(var i=0;i<=endIndex;i++) {
+	    	//move the canvas to the baseline position
+	    	ctx.translate(0,-1*(location.y-this.displayLocation.y));
 
-		        sky_pth.moveTo(i,world.track[i+startIndex]-location.y+this.displayLocation.y);
-		        sky_pth.lineTo(i+1,world.track[i+startIndex+1]-location.y+this.displayLocation.y);
+
+		    //loop over the track vertices
+		    for(var i=0;i<=canvas.width;i++) {
+
+		        sky_pth.moveTo(i,world.track[i+startIndex]);
+		        sky_pth.lineTo(i+1,world.track[i+startIndex+1]);
 		        sky_pth.lineTo(i+1,0);
 
 		        ctx.strokeStyle = grnd_color;
-		        grnd_pth.moveTo(i,world.track[i+startIndex]-location.y+this.displayLocation.y);
-		        grnd_pth.lineTo(i+1,world.track[i+startIndex+1]-location.y+this.displayLocation.y);
+		        grnd_pth.moveTo(i,world.track[i+startIndex]);
+		        grnd_pth.lineTo(i+1,world.track[i+startIndex+1]);
 		        grnd_pth.lineTo(i+1,canvas.height);
 
 		        ctx.strokeStyle = road_color;
-		        road_pth.moveTo(i,world.track[i+startIndex]-location.y+this.displayLocation.y);
-		        road_pth.lineTo(i+1,world.track[i+startIndex+1]-location.y+this.displayLocation.y);
+		        road_pth.moveTo(i,world.track[i+startIndex]);
+		        road_pth.lineTo(i+1,world.track[i+startIndex+1]);
 
 		    };
 
@@ -122,6 +126,14 @@ var World = function(config) {
 		    ctx.strokeStyle = road_color;
 		    context.lineWidth = 15;
 		    ctx.stroke(road_pth);
+
+	        //move the canvas back to where the car is
+	        ctx.translate(0,location.y-this.displayLocation.y);
+
+	        // ctx.moveTo(0,canvas.height/2);
+	        // ctx.lineTo(canvas.width, canvas.height/2);
+	        // ctx.stroke();
+
 
 		};
 

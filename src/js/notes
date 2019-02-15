@@ -3,6 +3,9 @@ straight/level rolling now works fairly well!
 
 collision detection with the track needs work
 - if dist < radius, then we need to relocate the wheel so dist = radius
+- perhaps return an object rather than just 'false' or the angle something like
+	{true, angle}
+	{false, distance}
 
 somethings wrong - velocity resets to 0 when no force is applied
 - it should carry over....
