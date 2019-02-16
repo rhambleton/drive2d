@@ -7,9 +7,6 @@ collision detection with the track needs work
 	{true, angle}
 	{false, distance}
 
-somethings wrong - velocity resets to 0 when no force is applied
-- it should carry over....
-
 we need to implement angular momentum of the wheel
 - if the wheel already has an angular velocity, it should play a role in the force balance....how do we do that?
 

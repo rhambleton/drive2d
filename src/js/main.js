@@ -99,12 +99,13 @@ function drawAndUpdate(currentT) {
     //clear the previous frame
     context.clearRect(0,0,canvas.width,canvas.height);
 
+
     //draw the track
     world.drawTrack(context,world.vehicle.location);
 
     //update the vehicle
     world.vehicle.update();
-    
+
     //draw the vehicle
     world.vehicle.draw(context,world.vehicle.location);
 

@@ -101,12 +101,12 @@ var World = function(config) {
 
 		        sky_pth.moveTo(i,world.track[i+startIndex]);
 		        sky_pth.lineTo(i+1,world.track[i+startIndex+1]);
-		        sky_pth.lineTo(i+1,0);
+		        sky_pth.lineTo(i+1,-1*canvas.height);
 
 		        ctx.strokeStyle = grnd_color;
 		        grnd_pth.moveTo(i,world.track[i+startIndex]);
 		        grnd_pth.lineTo(i+1,world.track[i+startIndex+1]);
-		        grnd_pth.lineTo(i+1,canvas.height);
+		        grnd_pth.lineTo(i+1,canvas.height*2);
 
 		        ctx.strokeStyle = road_color;
 		        road_pth.moveTo(i,world.track[i+startIndex]);

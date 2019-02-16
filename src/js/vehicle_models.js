@@ -401,10 +401,10 @@ var Wheel_Model = function(config) {
 		//check if we are on the ground
 		if(contactData.contact !== false) {
 
-
+			//error correction if the wheel is 'inside' the track
 			this.location.y = world.track[this.location.x]-this.radius;
 
-			//we are on the ground remove the component of the force normal to the ground
+			//we are on the ground remove the component of the force normal to the ground and modify the velocity
 			
 			//break y force and velocity into two components - one perpendicular and one parallel to the ground
 			var yforce_normal = this.forces.y*Math.cos(this.contactAngle);
@@ -413,10 +413,10 @@ var Wheel_Model = function(config) {
 			var yveloc_parallel = this.velocity.y*Math.sin(this.contactAngle);
 
 			//break x force into two compoents - one perpendicular and one parallel to the ground
-			var xforce_normal = this.forces.x*Math.sin(this.contactAngle);
+			var xforce_normal = this.forces.x*Math.sin(this.contactAngle);				
 			var xforce_parallel = this.forces.x*Math.cos(this.contactAngle);
-			var xveloc_normal = this.velocity.x*Math.sin(this.contactAngle);
-			var xveloc_parallel = this.velocity.x*Math.cos(this.contactAngle);
+			var xveloc_normal = this.velocity.x*Math.sin(this.contactAngle);			
+			var xveloc_parallel = this.velocity.x*Math.cos(this.contactAngle);			
 
 			//calculate the parallel force from the motor torque
 			var mforce_parallel = drive * this.output / this.radius;
@@ -424,8 +424,9 @@ var Wheel_Model = function(config) {
 			//calculate total normal and parallel forces and velocities
 			var tforce_normal = 0;															//ground absorbs normal force
 			var tforce_parallel = xforce_parallel + yforce_parallel + mforce_parallel;		//add up all parallel forces
+			var taccel_parallel = tforce_parallel / this.mass;
 			var tveloc_normal = -1 * (xveloc_normal + yveloc_normal) * this.tireBounce;		//tire bounces of ground
-			var tveloc_parallel = xveloc_parallel + yveloc_parallel;						//add up all parallel forces
+			var tveloc_parallel = xveloc_parallel + yveloc_parallel + taccel_parallel;						//add up all parallel forces
 
 			//break normal forces and velocities into x and y components
 			var force_normal_y = tforce_normal * Math.cos(this.contactAngle);
@@ -436,24 +437,14 @@ var Wheel_Model = function(config) {
 			//break parallel forces and velocities into x and y components
 			var force_parallel_y = tforce_parallel * Math.sin(this.contactAngle);
 			var force_parallel_x = tforce_parallel * Math.cos(this.contactAngle);
-			var veloc_parallel_y = tforce_parallel * Math.sin(this.contactAngle);
-			var veloc_parallel_x = tforce_parallel * Math.cos(this.contactAngle);
+			var veloc_parallel_y = tveloc_parallel * Math.sin(this.contactAngle);
+			var veloc_parallel_x = tveloc_parallel * Math.cos(this.contactAngle);
 
 			//recombine x and y forces and velocities
 			this.forces.x = force_normal_x + force_parallel_x;
 			this.forces.y = force_normal_y + force_parallel_y;
-			this.velocity.x = veloc_normal_x + veloc_parallel_x;
+			this.velocity.x = veloc_normal_x + veloc_parallel_x;		//without drive bboth normal and parallel are 0 - why!!?
 			this.velocity.y = veloc_normal_y + veloc_parallel_y;
-
-			// //move the wheel
-			// this.accel.x = this.forces.x/this.mass;
-			// this.accel.y = this.forces.y/this.mass;
-			// this.velocity.x += this.accel.x;
-			// this.velocity.y += this.accel.y;
-
-			// this.location.x = Math.round(this.location.x + this.velocity.x);
-			// this.location.y = Math.round(this.location.y - this.velocity.y);
-
 			//calculate wheel rotation
 			this.alpha = (tveloc_parallel / this.radius);
 
@@ -468,13 +459,13 @@ var Wheel_Model = function(config) {
 			this.alpha += omega; 
 			this.angle += this.alpha;
 
-		}
+			//move the wheel
+			this.accel.x = this.forces.x/this.mass;
+			this.accel.y = this.forces.y/this.mass;
+			this.velocity.x += this.accel.x;
+			this.velocity.y += this.accel.y;
 
-		//move the wheel
-		this.accel.x = this.forces.x/this.mass;
-		this.accel.y = this.forces.y/this.mass;
-		this.velocity.x += this.accel.x;
-		this.velocity.y += this.accel.y;
+		}
 
 		this.location.x = Math.round(this.location.x + this.velocity.x);
 		this.location.y = Math.round(this.location.y - this.velocity.y);
