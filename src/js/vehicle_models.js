@@ -369,28 +369,6 @@ var Wheel_Model = function(config) {
 		
 		var contactData = this.wheelContact(this, world.track);
 
-		// //correct if wheel is embedded in track
-		// while(contactData.contact = true && contactData.min_dist < this.radius) {
-
-		// 	//find the location of the minimum distance and the corresponding x value
-		// 	var correction_dist = contactData.min_dist - this.radius;
-		// 	var correction_x = contactData.min_dist_x;
-
-		// 	//calculate the angle between the center of the wheel and this point
-		// 	var delta_y = world.track[correction_x] - this.location.y;
-		// 	if(delta_y == 0) {
-		// 		contact_angle = Math.PI/2;
-		// 	} else {
-		// 		var delta_x = correction_x - this.location.x;
-		// 		var correction_angle = Math.atan(delta_x/delta_y)			
-		// 	}
-
-		// 	this.location.x -= correction_dist*Math.cos(correction_angle);
-		// 	this.location.y -= correction_dist*Math.sin(correction_angle);
-		// 	contactData = this.wheelContact(this, world.track);
-
-		// }
-
 		//apply gravity to this wheel
 		this.forces.y = -1 * this.mass * world.config.gravity;
 		this.forces.x = 0;
@@ -406,6 +384,13 @@ var Wheel_Model = function(config) {
 
 			//we are on the ground remove the component of the force normal to the ground and modify the velocity
 			
+			//calculate friction force (air friction)
+			var fforce_x = -1 * this.velocity.x * world.config.friction;
+			var fforce_y = -1 * this.velocity.y * world.config.friction;
+
+			this.forces.x += fforce_x;
+			this.forces.y += fforce_y;
+
 			//break y force and velocity into two components - one perpendicular and one parallel to the ground
 			var yforce_normal = this.forces.y*Math.cos(this.contactAngle);
 			var yforce_parallel = this.forces.y*Math.sin(this.contactAngle);
@@ -425,8 +410,10 @@ var Wheel_Model = function(config) {
 			var tforce_normal = 0;															//ground absorbs normal force
 			var tforce_parallel = xforce_parallel + yforce_parallel + mforce_parallel;		//add up all parallel forces
 			var taccel_parallel = tforce_parallel / this.mass;
-			var tveloc_normal = -1 * (xveloc_normal + yveloc_normal) * this.tireBounce;		//tire bounces of ground
-			var tveloc_parallel = xveloc_parallel + yveloc_parallel + taccel_parallel;						//add up all parallel forces
+			//console.log("ta: "+taccel_parallel);
+			var tveloc_normal = -1 * (yveloc_normal + xveloc_normal) * this.tireBounce;		//tire bounces of ground
+			var tveloc_parallel = xveloc_parallel + yveloc_parallel + taccel_parallel;			//add up all parallel forces
+			//console.log("vp: "+tveloc_parallel);
 
 			//break normal forces and velocities into x and y components
 			var force_normal_y = tforce_normal * Math.cos(this.contactAngle);
@@ -443,8 +430,9 @@ var Wheel_Model = function(config) {
 			//recombine x and y forces and velocities
 			this.forces.x = force_normal_x + force_parallel_x;
 			this.forces.y = force_normal_y + force_parallel_y;
-			this.velocity.x = veloc_normal_x + veloc_parallel_x;		//without drive bboth normal and parallel are 0 - why!!?
+			this.velocity.x = veloc_normal_x + veloc_parallel_x;		//without drive both normal and parallel are 0 - why!!?
 			this.velocity.y = veloc_normal_y + veloc_parallel_y;
+
 			//calculate wheel rotation
 			this.alpha = (tveloc_parallel / this.radius);
 
@@ -466,6 +454,8 @@ var Wheel_Model = function(config) {
 			this.velocity.y += this.accel.y;
 
 		}
+
+		console.log(Math.sqrt(this.velocity.x*this.velocity.x+this.velocity.y*this.velocity.y));
 
 		this.location.x = Math.round(this.location.x + this.velocity.x);
 		this.location.y = Math.round(this.location.y - this.velocity.y);

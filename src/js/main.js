@@ -19,8 +19,8 @@ var requestAnimationFrame = window.requestAnimationFrame ||
 
 //initialize the world object
 var config = {
-    gravity : 0.5,   //level of gravity in the world
-    friction : 1,   //level of friction in the world (air friction, etc.);
+    gravity : 2,   //level of gravity in the world
+    friction : 10,   //level of friction in the world (air friction, etc.);
     displayLocation : new Vertex2D(200,canvas.height/2) //location to display vehicle
 };
 var world = new World(config);
@@ -73,7 +73,7 @@ world.newTrack();
 //define the wheel object
 var config = {
 
-    mass : 1,
+    mass : 100,
     radius : 30,
     drawLocation : new Vertex(0,0),             //location of wheel in relation to the default draw point on the screen
     location : new Vertex2D(190,canvas.height/2-100),
@@ -84,9 +84,9 @@ var config = {
     wheelColor : 'rgba(200,200,200,1)',
     txtColor : 'rgba(175,175,175,1)',
     driveWheel : true,
-    output : 100,
+    output : 10000,
     friction : 0.8,
-    tireBounce : 0.68
+    tireBounce : 0.1
 
 }
 world.newWheel(config);
