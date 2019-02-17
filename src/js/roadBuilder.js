@@ -2,19 +2,24 @@
 //define the world object
 var World = function(config) {			
 
-	this.track = [];		//list of x,y coordinates for the track
-	this.scenery = [];		//list of scenery object locations
-	this.objects = [];		//list of interactive objects in the world
-	this.hitboxes = [];		//master list of hitboxes in the world
-	this.vehicle = {};		//object to hold the vehicle information
-
-	this.displayLocation = config.displayLocation;
+	this.track = [];								//list of x,y coordinates for the track
+	this.scenery = [];								//list of scenery object locations
+	this.objects = [];								//list of interactive objects in the world
+	this.hitboxes = [];								//master list of hitboxes in the world
+	this.vehicle = {};								//object to hold the vehicle information
+	this.screenLocation = { x:0, y:0 };				//used to track the global X-coordinate of the left and top edges of the screen
+	this.displayLocation = config.displayLocation;  //used to offset the object on the screen
 
 	//object to hold world configuration data
 	this.config = {						
 		gravity : config.gravity,
 		friction : config.friction
 	};									
+
+	this.updateScreen = function(obj) {
+		this.screenLocation.x = obj.location.x - obj.drawLocation.x;
+		this.screenLocation.y = obj.location.y - obj.drawLocation.y;
+	}
 
 
 	//method to add a new vehcile into the world
@@ -84,7 +89,7 @@ var World = function(config) {
 		    ctx.lineWidth = 10;
 
 		    //define the start and end indexes of what we need to draw
-		    var startIndex = location.x-this.displayLocation.x;
+		    var startIndex = this.screenLocation.x;
 		    var endIndex = startIndex + canvas.width;
 
 		    //start the path
@@ -93,7 +98,7 @@ var World = function(config) {
 		    var grnd_pth = new Path2D();
 
 	    	//move the canvas to the baseline position
-	    	ctx.translate(0,-1*(location.y-this.displayLocation.y));
+	    	ctx.translate(0,-1*location.y);
 
 
 		    //loop over the track vertices
@@ -128,7 +133,7 @@ var World = function(config) {
 		    ctx.stroke(road_pth);
 
 	        //move the canvas back to where the car is
-	        ctx.translate(0,location.y-this.displayLocation.y);
+	        ctx.translate(0,location.y);
 
 	        // ctx.moveTo(0,canvas.height/2);
 	        // ctx.lineTo(canvas.width, canvas.height/2);

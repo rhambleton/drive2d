@@ -24,7 +24,6 @@ var config = {
     displayLocation : new Vertex2D(200,canvas.height/2) //location to display vehicle
 };
 var world = new World(config);
-
 world.newTrack();
 
 // //define the player vehicle
@@ -33,31 +32,44 @@ world.newTrack();
 //     mass : 100,
 //     length : 100,
 //     height : 50,
-//     location : new Vertex2D(200,canvas.height/2-67),
+//     drawLocation : new Vertex2D(190,canvas.height/2),
+//     location : new Vertex2D(190,canvas.height/2),    
 //     angle : 0,
 //     wheel : [
 //         //rear wheel
 //         {
-//             location : new Vertex2D(-55,34),
-//             grip : 1,
-//             radius : 27,
-//             spring : 0.5,
-//             damper : 1,
-//             tireSize : 12,
-//             tireColor : 'rgba(30,30,30,1)',
-//             wheelColor : 'rgba(200,200,200)'
+//                 mass : 100,
+//                 radius : 30,
+//                 drawLocation : new Vertex(150,canvas.height/2),             //location of wheel in relation to the default draw point on the screen
+//                 location : new Vertex2D(190,canvas.height/2),
+//                 angle : 0,
+//                 grip : 1,
+//                 tireSize : 10,
+//                 tireColor : 'rgba(30,30,30,1)',
+//                 wheelColor : 'rgba(200,200,200,1)',
+//                 txtColor : 'rgba(175,175,175,1)',
+//                 driveWheel : 1,
+//                 output : 10000,
+//                 friction : 0.8,
+//                 tireBounce : 0.1
 //         },
-//         //front wheel
-//         {
-//             location : new Vertex2D(55,34),
-//             grip : 1,
-//             radius : 27,
-//             spring : 0.5,
-//             damper : 1,
-//             tireSize : 12,
-//             tireColor : 'rgba(30,30,30,1)',
-//             wheelColor : 'rgba(200,200,200)'
-//         }
+//         // //front wheel
+//         // {
+//         //         mass : 100,
+//         //         radius : 30,
+//         //         drawLocation : new Vertex(250,canvas.height/2-30),             //location of wheel in relation to the default draw point on the screen
+//         //         location : new Vertex2D(190,canvas.height/2-30),
+//         //         angle : 0,
+//         //         grip : 1,
+//         //         tireSize : 10,
+//         //         tireColor : 'rgba(30,30,30,1)',
+//         //         wheelColor : 'rgba(200,200,200,1)',
+//         //         txtColor : 'rgba(175,175,175,1)',
+//         //         driveWheel : 1,
+//         //         output : 10000,
+//         //         friction : 0.8,
+//         //         tireBounce : 0.1
+//         // },
 //     ],
 //     drivetrain : {
 //         efficiency : 1,
@@ -75,15 +87,17 @@ var config = {
 
     mass : 100,
     radius : 30,
-    drawLocation : new Vertex(0,0),             //location of wheel in relation to the default draw point on the screen
-    location : new Vertex2D(190,canvas.height/2-100),
+    drawLocation : new Vertex2D(200,canvas.height/2),             //location of wheel in relation to the default draw point on the screen
+    location : new Vertex2D(200,canvas.height/2),
     angle : 0,
     grip : 1,
     tireSize : 10,
     tireColor : 'rgba(30,30,30,1)',
     wheelColor : 'rgba(200,200,200,1)',
     txtColor : 'rgba(175,175,175,1)',
-    driveWheel : true,
+    axleColor : 'rgba(0,0,0,1)',
+    axleSize : 3,
+    driveWheel : 1,
     output : 10000,
     friction : 0.8,
     tireBounce : 0.1
@@ -99,15 +113,17 @@ function drawAndUpdate(currentT) {
     //clear the previous frame
     context.clearRect(0,0,canvas.width,canvas.height);
 
-
-    //draw the track
-    world.drawTrack(context,world.vehicle.location);
-
     //update the vehicle
     world.vehicle.update();
 
+    //update the screen location
+    world.updateScreen(world.vehicle);
+
+    //draw the track
+    world.drawTrack(context,world.screenLocation);
+
     //draw the vehicle
-    world.vehicle.draw(context,world.vehicle.location);
+    world.vehicle.draw(context,world.screenLocation);
 
     // restart the loop
     //setTimeout(drawAndUpdate,100);
