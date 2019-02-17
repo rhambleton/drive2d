@@ -17,6 +17,7 @@ var World = function(config) {
 	};									
 
 	this.updateScreen = function(obj) {
+		
 		this.screenLocation.x = obj.location.x - obj.drawLocation.x;
 		this.screenLocation.y = obj.location.y - obj.drawLocation.y;
 	}

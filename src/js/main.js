@@ -26,84 +26,90 @@ var config = {
 var world = new World(config);
 world.newTrack();
 
-// //define the player vehicle
-// var config = {
-//     color : 'rgba(150,0,0,1)',
-//     mass : 100,
-//     length : 100,
-//     height : 50,
-//     drawLocation : new Vertex2D(190,canvas.height/2),
-//     location : new Vertex2D(190,canvas.height/2),    
-//     angle : 0,
-//     wheel : [
-//         //rear wheel
-//         {
-//                 mass : 100,
-//                 radius : 30,
-//                 drawLocation : new Vertex(150,canvas.height/2),             //location of wheel in relation to the default draw point on the screen
-//                 location : new Vertex2D(190,canvas.height/2),
-//                 angle : 0,
-//                 grip : 1,
-//                 tireSize : 10,
-//                 tireColor : 'rgba(30,30,30,1)',
-//                 wheelColor : 'rgba(200,200,200,1)',
-//                 txtColor : 'rgba(175,175,175,1)',
-//                 driveWheel : 1,
-//                 output : 10000,
-//                 friction : 0.8,
-//                 tireBounce : 0.1
-//         },
-//         // //front wheel
-//         // {
-//         //         mass : 100,
-//         //         radius : 30,
-//         //         drawLocation : new Vertex(250,canvas.height/2-30),             //location of wheel in relation to the default draw point on the screen
-//         //         location : new Vertex2D(190,canvas.height/2-30),
-//         //         angle : 0,
-//         //         grip : 1,
-//         //         tireSize : 10,
-//         //         tireColor : 'rgba(30,30,30,1)',
-//         //         wheelColor : 'rgba(200,200,200,1)',
-//         //         txtColor : 'rgba(175,175,175,1)',
-//         //         driveWheel : 1,
-//         //         output : 10000,
-//         //         friction : 0.8,
-//         //         tireBounce : 0.1
-//         // },
-//     ],
-//     drivetrain : {
-//         efficiency : 1,
-//         drivewheels : [0,1],
-//     },
-//     engine : {
-//         output : 100
-//     }
-
-// };
-// world.newVehicle(config);
-
-//define the wheel object
+//define the player vehicle
 var config = {
-
+    color : 'rgba(150,0,0,1)',
     mass : 100,
-    radius : 30,
-    drawLocation : new Vertex2D(200,canvas.height/2),             //location of wheel in relation to the default draw point on the screen
-    location : new Vertex2D(200,canvas.height/2),
+    length : 100,
+    height : 50,
+    drawLocation : new Vertex2D(250,canvas.height/2+50),
+    location : new Vertex2D(300,canvas.height/2),    
     angle : 0,
-    grip : 1,
-    tireSize : 10,
-    tireColor : 'rgba(30,30,30,1)',
-    wheelColor : 'rgba(200,200,200,1)',
-    txtColor : 'rgba(175,175,175,1)',
-    axleColor : 'rgba(0,0,0,1)',
-    axleSize : 3,
-    driveWheel : 1,
-    output : 10000,
-    friction : 0.8,
-    tireBounce : 0.1
+    wheel : [
+        //rear wheel
+        {
+                mass : 100,
+                radius : 30,
+                offset :  new Vertex2D(-50,-50),                             //offset from center of vehicle defined above
+                drawLocation : new Vertex2D(0,0),             //location will be calculated by vehicle model
+                location : new Vertex2D(0,0),                 //location will be calculated by vehicle model
+                angle : 0,
+                grip : 1,
+                tireSize : 10,
+                tireColor : 'rgba(30,30,30,1)',
+                wheelColor : 'rgba(200,200,200,1)',
+                txtColor : 'rgba(175,175,175,1)',
+                axleColor : 'rgba(0,0,0,1)',
+                axleSize : 3,
+                driveWheel : 1,
+                output : 10000,
+                friction : 0.8,
+                tireBounce : 0.1
+        },
+        // //front wheel
+        // {
+        //         mass : 100,
+        //         radius : 30,
+        //         offset :  new Vertex2D(50,-50),               //offset from center of vehicle defined above
+        //         drawLocation : new Vertex2D(0,0),             //location will be calculated by vehicle model
+        //         location : new Vertex2D(0,0),                 //location will be calculated by vehicle model
+        //         angle : 0,
+        //         grip : 1,
+        //         tireSize : 10,
+        //         tireColor : 'rgba(30,30,30,1)',
+        //         wheelColor : 'rgba(200,200,200,1)',
+        //         txtColor : 'rgba(175,175,175,1)',
+        //         axleColor : 'rgba(0,0,0,1)',
+        //         axleSize : 3,
+        //         driveWheel : 1,
+        //         output : 10000,
+        //         friction : 0.8,
+        //         tireBounce : 0.1
+        // },
+    ],
+    drivetrain : {
+        efficiency : 1,
+        drivewheels : [0,1],
+    },
+    engine : {
+        output : 100
+    }
 
-}
-world.newWheel(config);
+};
+world.newVehicle(config);
+
+// //define the wheel object
+// var config = {
+
+//     mass : 100,
+//     radius : 30,
+//     drawLocation : new Vertex2D(250,canvas.height/2),             //location of wheel in relation to the default draw point on the screen
+//     location : new Vertex2D(300,canvas.height/2),
+//     angle : 0,
+//     grip : 1,
+//     tireSize : 10,
+//     tireColor : 'rgba(30,30,30,1)',
+//     wheelColor : 'rgba(200,200,200,1)',
+//     txtColor : 'rgba(175,175,175,1)',
+//     axleColor : 'rgba(0,0,0,1)',
+//     axleSize : 3,
+//     driveWheel : 1,
+//     output : 10000,
+//     friction : 0.8,
+//     tireBounce : 0.1
+
+// }
+// world.newWheel(config);
 
 var drive = 0;
 
