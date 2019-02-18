@@ -1,15 +1,12 @@
-straight/level rolling now works fairly well!
-- no slipping, even when there should be
-
 collision detection with the track needs work
-- if dist < radius, then we need to relocate the wheel so dist = radius
-- perhaps return an object rather than just 'false' or the angle something like
-	{true, angle}
-	{false, distance}
+- on hills we should work from the maximum/minimum X rather than the center point
 
 we need to implement angular momentum of the wheel
 - if the wheel already has an angular velocity, it should play a role in the force balance....how do we do that?
 
-wheel spin when the wheel is in the air feels weird - too aggressive.
-- need to implement friction to slow the wheel down the drive is removed
+need to integrate wheel into vehicle
+- forces should be updated at the wheel level
+- wheel spin rotation should be updated at the wheel level
+- vehicle motion and rotation (including wheel position) will need to be done at the vehicle level
+- vehicle rotation due to velocity (alpha = velocity / radius) needs to be done at the vehicle level
 

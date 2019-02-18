@@ -168,14 +168,14 @@ var Wheel_Model = function(config) {
 
 		//draw tire
 		ctx.beginPath();
-		ctx.arc(0,0,this.radius-this.tireSize,0,2*Math.PI);
+		ctx.arc(0,0,this.radius-this.tireSize/2,0,2*Math.PI);
 		ctx.strokeStyle = this.tireColor;
 		ctx.lineWidth = this.tireSize;
 		ctx.stroke();
 
 		//draw wheel
 		ctx.beginPath();
-		ctx.arc(0,0,this.radius-(3*this.tireSize/2),0,2*Math.PI);
+		ctx.arc(0,0,this.radius-this.tireSize,0,2*Math.PI);
 		ctx.lineWidth = 1;
 		ctx.stroke();
 		ctx.fillStyle = this.wheelColor;
@@ -193,28 +193,28 @@ var Wheel_Model = function(config) {
 		ctx.beginPath();
 		ctx.lineWidth = this.tireSize/4;
 		ctx.strokeStyle = this.txtColor;
-		ctx.arc(0,0,this.radius-this.tireSize,0,Math.PI/6);
+		ctx.arc(0,0,this.radius-this.tireSize/2,0,Math.PI/6);
 		ctx.stroke();
 		ctx.beginPath();
 		ctx.strokeStyle = this.tireColor;
-		ctx.arc(0,0,this.radius-this.tireSize,Math.PI/6,Math.PI/5);
+		ctx.arc(0,0,this.radius-this.tireSize/2,Math.PI/6,Math.PI/5);
 		ctx.stroke();
 		ctx.beginPath();
 		ctx.strokeStyle = this.txtColor;
-		ctx.arc(0,0,this.radius-this.tireSize,Math.PI/5,Math.PI/2);
+		ctx.arc(0,0,this.radius-this.tireSize/2,Math.PI/5,Math.PI/2);
 		ctx.stroke();
 		ctx.beginPath();
 		ctx.lineWidth = this.tireSize/4;
 		ctx.strokeStyle = this.txtColor;
-		ctx.arc(0,0,this.radius-this.tireSize,Math.PI,7*Math.PI/6);
+		ctx.arc(0,0,this.radius-this.tireSize/2,Math.PI,7*Math.PI/6);
 		ctx.stroke();
 		ctx.beginPath();
 		ctx.strokeStyle = this.tireColor;
-		ctx.arc(0,0,this.radius-this.tireSize,7*Math.PI/6,6*Math.PI/5);
+		ctx.arc(0,0,this.radius-this.tireSize/2,7*Math.PI/6,6*Math.PI/5);
 		ctx.stroke();
 		ctx.beginPath();
 		ctx.strokeStyle = this.txtColor;
-		ctx.arc(0,0,this.radius-this.tireSize,6*Math.PI/5,3*Math.PI/2);
+		ctx.arc(0,0,this.radius-this.tireSize/2,6*Math.PI/5,3*Math.PI/2);
 		ctx.stroke();
 
 		//put the canvas back
@@ -228,6 +228,11 @@ var Wheel_Model = function(config) {
 	//define vehicle movement physics
 	this.update = function(location) {
 		
+		//TODO: only update forces - do movement updates in the main vehicle model
+		//TODO: allow for applied forces - to allow transfer of forces from other parts of the vehicle
+		//TODO: implment Fmax as a limit for the drive force (remaining force should just spin the wheel)
+
+
 		var contactData = this.wheelContact(this, world.track);
 
 		//apply gravity to this wheel
@@ -267,12 +272,26 @@ var Wheel_Model = function(config) {
 			//calculate the parallel force from the motor torque
 			var mforce_parallel = this.driveWheel * drive * this.output / this.radius;
 
+			//calculate tforce_normal and Fmax
+			var tforce_normal = xforce_normal + yforce_normal;
+			var Fmax = -1*tforce_normal * this.grip * drive;
+			
+			//calculate the actual driving force and the residual driving force
+			if(Fmax < 0) {
+				var aforce_parallel = Math.max(Fmax, mforce_parallel);
+				var residual_force = Math.min(0, mforce_parallel - Fmax);
+			} else {
+				var aforce_parallel = Math.min(Fmax, mforce_parallel);
+				var residual_force = Math.max(0, mforce_parallel - Fmax);
+			}
+
 			//calculate total normal and parallel forces and velocities
 			var tforce_normal = 0;															//ground absorbs normal force
-			var tforce_parallel = xforce_parallel + yforce_parallel + mforce_parallel;		//add up all parallel forces
+			var tforce_parallel = xforce_parallel + yforce_parallel + aforce_parallel;		//add up all parallel forces
 			var taccel_parallel = tforce_parallel / this.mass;
+	
 			var tveloc_normal = -1 * (yveloc_normal + xveloc_normal) * this.tireBounce;		//tire bounces of ground
-			var tveloc_parallel = xveloc_parallel + yveloc_parallel + taccel_parallel;			//add up all parallel forces
+			var tveloc_parallel = xveloc_parallel + yveloc_parallel + taccel_parallel;		//add up all parallel forces
 
 			//break normal forces and velocities into x and y components
 			var force_normal_y = tforce_normal * Math.cos(this.contactAngle);
@@ -293,7 +312,7 @@ var Wheel_Model = function(config) {
 			this.velocity.y = veloc_normal_y + veloc_parallel_y;
 
 			//calculate wheel rotation
-			this.alpha = (tveloc_parallel / this.radius);
+			this.alpha = (tveloc_parallel / this.radius) + ((residual_force * this.radius)/this.inertia);
 
 			//rotate the wheel
 			this.angle += this.alpha;

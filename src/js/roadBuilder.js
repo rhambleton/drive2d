@@ -2,13 +2,15 @@
 //define the world object
 var World = function(config) {			
 
-	this.track = [];								//list of x,y coordinates for the track
-	this.scenery = [];								//list of scenery object locations
-	this.objects = [];								//list of interactive objects in the world
-	this.hitboxes = [];								//master list of hitboxes in the world
-	this.vehicle = {};								//object to hold the vehicle information
-	this.screenLocation = { x:0, y:0 };				//used to track the global X-coordinate of the left and top edges of the screen
-	this.displayLocation = config.displayLocation;  //used to offset the object on the screen
+	this.track = [];								 //list of x,y coordinates for the track
+	this.scenery = [];								 //list of scenery object locations
+	this.objects = [];								 //list of interactive objects in the world
+	this.hitboxes = [];								 //master list of hitboxes in the world
+	this.vehicle = {};								 //object to hold the vehicle information
+	this.screenLocation = { x:0, y:0 };				 //used to track the global X-coordinate of the left and top edges of the screen
+	this.displayLocation = config.displayLocation;   //used to offset the object on the screen
+	this.surfaceThickness = config.surfaceThickness; //used to draw the 'road'
+
 
 	//object to hold world configuration data
 	this.config = {						
@@ -87,7 +89,7 @@ var World = function(config) {
 		    var sky_color = 'rgba(145,185,250,1)';
 		    var grnd_color = 'rgba(50,150,50,1)';
 		    var road_color = 'rgba(50,50,50,1)';
-		    ctx.lineWidth = 10;
+		    ctx.lineWidth = 1;
 
 		    //define the start and end indexes of what we need to draw
 		    var startIndex = this.screenLocation.x;
@@ -130,7 +132,7 @@ var World = function(config) {
 
 		    //drawingw the road
 		    ctx.strokeStyle = road_color;
-		    context.lineWidth = 15;
+		    context.lineWidth = this.surfaceThickness;
 		    ctx.stroke(road_pth);
 
 	        //move the canvas back to where the car is

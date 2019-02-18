@@ -1,8 +1,3 @@
-//TODO - gravity / jetpack / look up down / jump crouch
-//TODO - camera sway when walking
-//TODO - level editing/loading/saving
-//TODO - mouse look
-//TODO - switch to full-perspective once implemented
 
 //initialize the main canvas variables
 var canvas = document.getElementById("viewPort");
@@ -21,7 +16,9 @@ var requestAnimationFrame = window.requestAnimationFrame ||
 var config = {
     gravity : 2,   //level of gravity in the world
     friction : 10,   //level of friction in the world (air friction, etc.);
-    displayLocation : new Vertex2D(200,canvas.height/2) //location to display vehicle
+    displayLocation : new Vertex2D(200,canvas.height/2), //location to display vehicle
+    surfaceThickness : 10,
+
 };
 var world = new World(config);
 world.newTrack();
@@ -44,8 +41,8 @@ var config = {
                 drawLocation : new Vertex2D(0,0),             //location will be calculated by vehicle model
                 location : new Vertex2D(0,0),                 //location will be calculated by vehicle model
                 angle : 0,
-                grip : 1,
-                tireSize : 10,
+                grip : 0.93,
+                tireSize : 12,
                 tireColor : 'rgba(30,30,30,1)',
                 wheelColor : 'rgba(200,200,200,1)',
                 txtColor : 'rgba(175,175,175,1)',
@@ -130,6 +127,8 @@ function drawAndUpdate(currentT) {
 
     //draw the vehicle
     world.vehicle.draw(context,world.screenLocation);
+
+    console.log(world.track[world.vehicle.location.x] + " : " + world.vehicle.location.y);
 
     // restart the loop
     //setTimeout(drawAndUpdate,100);
